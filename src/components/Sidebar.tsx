@@ -15,10 +15,12 @@ import {
   Redo,
   FileText,
   Upload,
-  Settings
+  Settings,
+  ArrowLeft
 } from 'lucide-react';
 import { Tool } from '../types';
 import { TemplateDebugPanel } from './TemplateDebugPanel';
+import { useTranslation } from '../i18n/i18nContext';
 
 interface SidebarProps {
   activeTool: Tool;
@@ -27,21 +29,14 @@ interface SidebarProps {
   onGenerate: () => void;
   onTemplates: () => void;
   onPreview: () => void;
+  onBackToTemplateSelection: () => void;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
 }
 
-const tools = [
-  { id: 'select' as Tool, icon: MousePointer, label: 'Select' },
-  { id: 'pan' as Tool, icon: Hand, label: 'Pan' },
-  { id: 'text' as Tool, icon: Type, label: 'Text' },
-  { id: 'image' as Tool, icon: Image, label: 'Image' },
-  { id: 'rectangle' as Tool, icon: Square, label: 'Rectangle' },
-  { id: 'circle' as Tool, icon: Circle, label: 'Circle' },
-  { id: 'line' as Tool, icon: Minus, label: 'Line' },
-];
+
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTool,
@@ -50,12 +45,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onGenerate,
   onTemplates,
   onPreview,
+  onBackToTemplateSelection,
   canUndo,
   canRedo,
   onUndo,
   onRedo,
 }) => {
   const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const { t } = useTranslation();
+
+  const tools = [
+    { id: 'select' as Tool, icon: MousePointer, label: t('select') },
+    { id: 'pan' as Tool, icon: Hand, label: t('pan') },
+    { id: 'text' as Tool, icon: Type, label: t('text') },
+    { id: 'image' as Tool, icon: Image, label: t('image') },
+    { id: 'rectangle' as Tool, icon: Square, label: t('rectangle') },
+    { id: 'circle' as Tool, icon: Circle, label: t('circle') },
+    { id: 'line' as Tool, icon: Minus, label: t('line') },
+  ];
 
   return (
     <>
@@ -94,11 +101,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
                 : 'text-slate-600 cursor-not-allowed'
             }`}
-            title="Undo"
+            title={t('undo')}
           >
             <Undo size={20} />
             <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-              Undo
+              {t('undo')}
             </span>
           </button>
 
@@ -110,11 +117,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
                 : 'text-slate-600 cursor-not-allowed'
             }`}
-            title="Redo"
+            title={t('redo')}
           >
             <Redo size={20} />
             <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-              Redo
+              {t('redo')}
             </span>
           </button>
         </div>
@@ -125,57 +132,68 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Actions */}
         <div className="p-2 space-y-1">
           <button
+            onClick={onBackToTemplateSelection}
+            className="w-12 h-12 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group relative"
+            title="Kembali ke Pilihan Template"
+          >
+            <ArrowLeft size={20} />
+            <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
+              Kembali ke Pilihan Template
+            </span>
+          </button>
+
+          <button
             onClick={onTemplates}
             className="w-12 h-12 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group relative"
-            title="Templates & Upload"
+            title={t('templatesUpload')}
           >
             <FileText size={20} />
             <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-              Templates & Upload
+              {t('templatesUpload')}
             </span>
           </button>
 
           <button
             onClick={onDataManager}
             className="w-12 h-12 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group relative"
-            title="Data Manager"
+            title={t('dataManager')}
           >
             <Database size={20} />
             <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-              Data Manager
+              {t('dataManager')}
             </span>
           </button>
 
           <button
             onClick={onPreview}
             className="w-12 h-12 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group relative"
-            title="Preview"
+            title={t('preview')}
           >
             <Eye size={20} />
             <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-              Preview
+              {t('preview')}
             </span>
           </button>
 
           <button
             onClick={() => setShowDebugPanel(true)}
             className="w-12 h-12 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group relative"
-            title="Debug Templates"
+            title={t('debugTemplates')}
           >
             <Settings size={20} />
             <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-              Debug Templates
+              {t('debugTemplates')}
             </span>
           </button>
 
           <button
             onClick={onGenerate}
             className="w-12 h-12 rounded-lg flex items-center justify-center bg-green-600 text-white hover:bg-green-700 transition-colors group relative"
-            title="Generate"
+            title={t('generate')}
           >
             <Download size={20} />
             <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-              Generate
+              {t('generate')}
             </span>
           </button>
         </div>

@@ -6,15 +6,18 @@ import { useTemplateStore } from '../store/templateStore';
 import { UploadModal } from './UploadModal';
 import { TemplateEditor } from './TemplateEditor';
 import { DesignElement } from '../types';
+import { useTranslation } from '../i18n/i18nContext';
 
 interface TemplateModalProps {
   onClose: () => void;
+  onTemplateSelect?: () => void;
 }
 
-export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
+export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose, onTemplateSelect }) => {
   const { elements, setElements } = useDesignStore();
   const { variables } = useDataStore();
   const { templates, addTemplate, updateTemplate, deleteTemplate, duplicateTemplate } = useTemplateStore();
+  const { t } = useTranslation();
   
   const [templateName, setTemplateName] = useState('');
   const [templateDescription, setTemplateDescription] = useState('');
@@ -76,7 +79,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
       console.log('Template saved successfully:', template);
     } catch (error) {
       console.error('Error saving template:', error);
-      alert('Failed to save template. Please try again.');
+      alert(t('templateSaveError'));
     }
   };
 
@@ -122,14 +125,15 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
       
       console.log('Template loaded successfully:', elementsToLoad.length, 'elements');
       
-      // Close modal after successful load
+      // Navigate to editor after successful load
       setTimeout(() => {
-        onClose();
+        onTemplateSelect?.();
       }, 500);
       
     } catch (error) {
-      console.error('Error loading template:', error);
-      alert(`Failed to load template: ${error.message}`);
+        console.error('Error loading template:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        alert(`${t('templateLoadError')}: ${errorMessage}`);
     } finally {
       setLoadingTemplate(null);
     }
@@ -142,13 +146,13 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
   };
 
   const handleDeleteTemplate = (templateId: string) => {
-    if (confirm('Are you sure you want to delete this template? This action cannot be undone.')) {
+    if (confirm(t('confirmDelete'))) {
       try {
         deleteTemplate(templateId);
         console.log('Template deleted:', templateId);
       } catch (error) {
         console.error('Error deleting template:', error);
-        alert('Failed to delete template. Please try again.');
+        alert(t('templateDeleteError'));
       }
     }
   };
@@ -159,7 +163,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
       console.log('Template duplicated:', template.id);
     } catch (error) {
       console.error('Error duplicating template:', error);
-      alert('Failed to duplicate template. Please try again.');
+      alert(t('templateDuplicateError'));
     }
   };
 
@@ -197,15 +201,15 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center space-x-4">
-            <h2 className="text-2xl font-bold">Template Manager</h2>
+            <h2 className="text-2xl font-bold">{t('templatesLibrary')}</h2>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <span>Total: {templates.length}</span>
+              <span>{t('total')}: {templates.length}</span>
               <span>•</span>
-              <span>Filtered: {filteredTemplates.length}</span>
+              <span>{t('filtered')}: {filteredTemplates.length}</span>
               <button
                 onClick={handleRefreshTemplates}
                 className="p-1 hover:bg-gray-100 rounded"
-                title="Refresh templates"
+                title={t('refreshTemplates')}
               >
                 <RefreshCw size={16} />
               </button>
@@ -217,14 +221,14 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
               className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
               <Upload size={20} />
-              <span>Upload Certificate</span>
+              <span>{t('uploadTemplate')}</span>
             </button>
             <button
               onClick={() => setShowSaveForm(true)}
               className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Save size={20} />
-              <span>Save Current</span>
+              <span>{t('saveCurrent')}</span>
             </button>
             <button
               onClick={onClose}
@@ -297,7 +301,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
                 onClick={handleSaveTemplate}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
-                Save Template
+                {t('saveTemplate')}
               </button>
               <button
                 onClick={() => {
@@ -309,7 +313,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
                 }}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Cancel
+                {t('cancel')}
               </button>
             </div>
           </div>
@@ -324,7 +328,7 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search templates..."
+                placeholder={t('searchTemplates')}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -360,14 +364,14 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
             <div className="text-center py-12">
               <FileText size={48} className="mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {templates.length === 0 ? 'No templates found' : 'No matching templates'}
+                {templates.length === 0 ? t('noTemplatesFound') : t('noMatchingTemplates')}
               </h3>
               <p className="text-gray-500 mb-4">
-                {templates.length === 0 
-                  ? 'Create your first template by saving your current design or uploading a certificate'
+                {templates.length === 0
+                  ? t('createFirstTemplate')
                   : searchTerm || selectedCategory !== 'All'
-                    ? 'Try adjusting your search or filter criteria'
-                    : 'No templates match your current filters'
+                  ? t('adjustSearchCriteria')
+                  : t('noTemplatesMatchFilters')
                 }
               </p>
               <div className="flex justify-center space-x-4">
@@ -375,13 +379,13 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
                   onClick={() => setShowUploadModal(true)}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  Upload Certificate
+                  {t('uploadTemplate')}
                 </button>
                 <button
                   onClick={() => setShowSaveForm(true)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  Save Current Design
+                  {t('saveCurrentDesign')}
                 </button>
               </div>
             </div>
@@ -412,28 +416,28 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
                       <button
                         onClick={() => handleEditTemplate(template)}
                         className="p-1 bg-white bg-opacity-90 rounded-full hover:bg-opacity-100 transition-colors"
-                        title="Edit template"
+                        title={t('edit')}
                       >
                         <Edit size={16} className="text-gray-600" />
                       </button>
                       <button
                         onClick={() => handleDuplicateTemplate(template)}
                         className="p-1 bg-white bg-opacity-90 rounded-full hover:bg-opacity-100 transition-colors"
-                        title="Duplicate template"
+                        title={t('duplicate')}
                       >
                         <Copy size={16} className="text-gray-600" />
                       </button>
                       <button
                         onClick={() => handleDeleteTemplate(template.id)}
                         className="p-1 bg-white bg-opacity-90 rounded-full hover:bg-opacity-100 transition-colors"
-                        title="Delete template"
+                        title={t('delete')}
                       >
                         <Trash2 size={16} className="text-red-600" />
                       </button>
                     </div>
                     {loadingTemplate === template.id && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                        <div className="text-white text-sm">Loading...</div>
+                        <div className="text-white text-sm">{t('loading')}</div>
                       </div>
                     )}
                   </div>
@@ -476,11 +480,11 @@ export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose }) => {
                         disabled={loadingTemplate === template.id}
                         className="text-blue-600 hover:text-blue-800 text-sm font-medium disabled:opacity-50"
                       >
-                        {loadingTemplate === template.id ? 'Loading...' : 'Use Template'}
+                        {loadingTemplate === template.id ? t('loading') : t('useTemplate')}
                       </button>
                     </div>
                     <div className="text-xs text-gray-400 mt-1">
-                      Created: {new Date(template.createdAt).toLocaleDateString()}
+                      {t('created')}: {new Date(template.createdAt).toLocaleDateString()}
                     </div>
                   </div>
                 </div>

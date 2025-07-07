@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useState, useRef } from 'react';
+import React, { useState, useCallback, useRef, forwardRef, useEffect } from 'react';
 import { DesignElement, Tool } from '../types';
 import { ElementRenderer } from './ElementRenderer';
 import { Grid } from './Grid';
@@ -32,29 +32,104 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
     if (activeTool === 'pan') {
       setIsPanning(true);
       setLastPanPoint({ x: e.clientX, y: e.clientY });
-    } else if (activeTool === 'text') {
+    } else if (activeTool !== 'select') {
       const rect = canvasRef.current?.getBoundingClientRect();
       if (rect) {
         const x = (e.clientX - rect.left - pan.x) / zoom;
         const y = (e.clientY - rect.top - pan.y) / zoom;
         
-        const newElement: DesignElement = {
-          id: Date.now().toString(),
-          type: 'text',
-          position: { x, y },
-          size: { width: 200, height: 40 },
-          rotation: 0,
-          opacity: 1,
-          zIndex: elements.length,
-          text: 'New Text',
-          textStyle: {
-            fontFamily: 'Arial',
-            fontSize: 16,
-            fontWeight: 'normal',
-            color: '#000000',
-            textAlign: 'left',
-          },
-        };
+        let newElement: DesignElement;
+        
+        switch (activeTool) {
+          case 'text':
+            newElement = {
+              id: Date.now().toString(),
+              type: 'text',
+              position: { x, y },
+              size: { width: 200, height: 40 },
+              rotation: 0,
+              opacity: 1,
+              zIndex: elements.length,
+              text: 'New Text',
+              textStyle: {
+                fontFamily: 'Arial',
+                fontSize: 16,
+                fontWeight: 'normal',
+                color: '#000000',
+                textAlign: 'left',
+              },
+            };
+            break;
+            
+          case 'rectangle':
+            newElement = {
+              id: Date.now().toString(),
+              type: 'rectangle',
+              position: { x, y },
+              size: { width: 100, height: 100 },
+              rotation: 0,
+              opacity: 1,
+              zIndex: elements.length,
+              backgroundColor: 'transparent',
+              borderStyle: {
+                width: 2,
+                color: '#000000',
+                style: 'solid',
+              },
+            };
+            break;
+            
+          case 'circle':
+            newElement = {
+              id: Date.now().toString(),
+              type: 'circle',
+              position: { x, y },
+              size: { width: 100, height: 100 },
+              rotation: 0,
+              opacity: 1,
+              zIndex: elements.length,
+              backgroundColor: 'transparent',
+              borderStyle: {
+                width: 2,
+                color: '#000000',
+                style: 'solid',
+              },
+            };
+            break;
+            
+          case 'line':
+            newElement = {
+              id: Date.now().toString(),
+              type: 'line',
+              position: { x, y },
+              size: { width: 100, height: 2 },
+              rotation: 0,
+              opacity: 1,
+              zIndex: elements.length,
+              lineStyle: {
+                width: 2,
+                color: '#000000',
+                style: 'solid',
+              },
+            };
+            break;
+            
+          case 'image':
+            newElement = {
+              id: Date.now().toString(),
+              type: 'image',
+              position: { x, y },
+              size: { width: 150, height: 150 },
+              rotation: 0,
+              opacity: 1,
+              zIndex: elements.length,
+              imageUrl: 'https://via.placeholder.com/150x150?text=Image',
+            };
+            break;
+            
+          default:
+            return;
+        }
         
         onElementAdd(newElement);
       }
@@ -79,11 +154,21 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
     setIsPanning(false);
   }, []);
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
+  const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     setZoom(prev => Math.min(Math.max(prev * delta, 0.1), 5));
   }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      canvas.addEventListener('wheel', handleWheel, { passive: false });
+      return () => {
+        canvas.removeEventListener('wheel', handleWheel);
+      };
+    }
+  }, [handleWheel]);
 
   return (
     <div className="flex-1 bg-gray-100 relative overflow-hidden">
@@ -106,7 +191,7 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onWheel={handleWheel}
+
         onClick={onCanvasClick}
         style={{
           cursor: activeTool === 'pan' ? 'grab' : activeTool === 'select' ? 'default' : 'crosshair'

@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { X, Upload, Plus, Trash2, Download } from 'lucide-react';
 import { useDataStore } from '../store/dataStore';
 import { DataRow, Variable } from '../types';
+import { useTranslation } from '../i18n/i18nContext';
 
 interface DataManagerProps {
   onClose: () => void;
@@ -11,6 +12,7 @@ export const DataManager: React.FC<DataManagerProps> = ({ onClose }) => {
   const { data, variables, setData, addDataRow, updateDataRow, deleteDataRow, importFromCSV, addVariable, updateVariable, deleteVariable } = useDataStore();
   const [activeTab, setActiveTab] = useState<'data' | 'variables'>('data');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -64,7 +66,7 @@ export const DataManager: React.FC<DataManagerProps> = ({ onClose }) => {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-5/6 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold">Data Manager</h2>
+          <h2 className="text-2xl font-bold">{t('dataManager')}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -83,7 +85,7 @@ export const DataManager: React.FC<DataManagerProps> = ({ onClose }) => {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            Data ({data.length} rows)
+{t('data')} ({data.length} {t('rows')})
           </button>
           <button
             onClick={() => setActiveTab('variables')}
@@ -93,7 +95,7 @@ export const DataManager: React.FC<DataManagerProps> = ({ onClose }) => {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            Variables ({variables.length})
+{t('variables')} ({variables.length})
           </button>
         </div>
 
@@ -109,7 +111,7 @@ export const DataManager: React.FC<DataManagerProps> = ({ onClose }) => {
                     className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     <Upload size={20} />
-                    <span>Import CSV</span>
+                    <span>{t('importCsv')}</span>
                   </button>
                   <input
                     ref={fileInputRef}
@@ -124,14 +126,14 @@ export const DataManager: React.FC<DataManagerProps> = ({ onClose }) => {
                     className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Download size={20} />
-                    <span>Export CSV</span>
+                    <span>{t('exportCsv')}</span>
                   </button>
                   <button
                     onClick={handleAddRow}
                     className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     <Plus size={20} />
-                    <span>Add Row</span>
+                    <span>{t('addRow')}</span>
                   </button>
                 </div>
               </div>
@@ -140,12 +142,12 @@ export const DataManager: React.FC<DataManagerProps> = ({ onClose }) => {
               <div className="flex-1 overflow-auto p-4">
                 {data.length === 0 ? (
                   <div className="text-center py-12">
-                    <p className="text-gray-500 mb-4">No data available</p>
+                    <p className="text-gray-500 mb-4">{t('noDataAvailable')}</p>
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                      Import CSV File
+                      {t('importCsvFile')}
                     </button>
                   </div>
                 ) : (
@@ -159,7 +161,7 @@ export const DataManager: React.FC<DataManagerProps> = ({ onClose }) => {
                               {variable.name}
                             </th>
                           ))}
-                          <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
+                          <th className="border border-gray-300 px-4 py-2 text-left">{t('actions')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -204,7 +206,7 @@ export const DataManager: React.FC<DataManagerProps> = ({ onClose }) => {
                   className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <Plus size={20} />
-                  <span>Add Variable</span>
+                  <span>{t('addVariable')}</span>
                 </button>
               </div>
 
@@ -216,7 +218,7 @@ export const DataManager: React.FC<DataManagerProps> = ({ onClose }) => {
                       <div className="grid grid-cols-3 gap-4 items-center">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Variable Name
+{t('variableName')}
                           </label>
                           <input
                             type="text"
@@ -227,7 +229,7 @@ export const DataManager: React.FC<DataManagerProps> = ({ onClose }) => {
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Type
+{t('type')}
                           </label>
                           <select
                             value={variable.type}

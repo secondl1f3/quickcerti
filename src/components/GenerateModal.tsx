@@ -3,6 +3,7 @@ import { X, FileText, Image, Download, AlertCircle, CheckCircle } from 'lucide-r
 import { useDataStore } from '../store/dataStore';
 import { useDesignStore } from '../store/designStore';
 import { CertificateGenerator } from '../utils/certificateGenerator';
+import { useTranslation } from '../i18n/i18nContext';
 
 interface GenerateModalProps {
   onClose: () => void;
@@ -18,6 +19,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const { t } = useTranslation();
 
   const handleGenerate = async () => {
     if (data.length === 0) {
@@ -26,7 +28,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
     }
 
     if (elements.length === 0) {
-      setError('No design elements found. Please create a certificate design first.');
+      setError(t('noDesignElements'));
       return;
     }
 
@@ -67,9 +69,9 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
 
   const getDownloadInfo = () => {
     if (data.length === 1) {
-      return `1 certificate will be downloaded as a single ${format.toUpperCase()} file`;
+      return t('singleCertificateDownload', { format: format.toUpperCase() });
     } else {
-      return `${data.length} certificates will be downloaded as a ZIP file containing ${format.toUpperCase()} files`;
+      return t('multipleCertificatesDownload', { count: data.length, format: format.toUpperCase() });
     }
   };
 
@@ -78,7 +80,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-bold">Generate Certificates</h2>
+          <h2 className="text-xl font-bold">{t('generateCertificates')}</h2>
           <button
             onClick={onClose}
             disabled={isGenerating}
@@ -93,7 +95,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
           {/* File Format */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              File Format
+              {t('outputFormat')}
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
@@ -112,7 +114,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
                   }`}
                 >
                   <Icon size={20} />
-                  <span className="text-sm font-medium">{label}</span>
+                  <span className="text-sm font-medium">{label === 'PDF' ? t('pdfDocument') : label === 'PNG' ? t('pngImage') : t('jpgImage')}</span>
                 </button>
               ))}
             </div>
@@ -122,7 +124,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
           {(format === 'png' || format === 'jpg') && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quality: {quality}%
+                {t('imageQuality')}: {quality}%
               </label>
               <input
                 type="range"
@@ -166,7 +168,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
 
           {/* Generation Info */}
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-900 mb-2">Generation Summary</h3>
+            <h3 className="font-medium text-gray-900 mb-2">{t('downloadInformation')}</h3>
             <div className="space-y-1 text-sm text-gray-600">
               <p>Files to generate: <span className="font-medium">{data.length}</span></p>
               <p>Format: <span className="font-medium">{format.toUpperCase()}</span></p>
@@ -193,7 +195,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
             <div className="flex items-center space-x-2 p-3 bg-green-50 border border-green-200 rounded-md">
               <CheckCircle size={20} className="text-green-600 flex-shrink-0" />
               <p className="text-sm text-green-800">
-                Certificates generated and downloaded successfully!
+                {t('certificatesGenerated')}
               </p>
             </div>
           )}
@@ -224,7 +226,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
               disabled={isGenerating}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              {isGenerating ? 'Generating...' : 'Cancel'}
+              {isGenerating ? t('generating') : t('cancel')}
             </button>
             <button
               onClick={handleGenerate}
@@ -235,7 +237,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
               <span>
                 {isGenerating 
                   ? `${progress}%` 
-                  : `Generate ${data.length > 1 ? `${data.length} Files` : '1 File'}`
+                  : t('generateDownload')
                 }
               </span>
             </button>

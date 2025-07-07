@@ -1,6 +1,7 @@
 import React from 'react';
 import { DesignElement, Variable } from '../types';
 import { X, AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd } from 'lucide-react';
+import { useTranslation } from '../i18n/i18nContext';
 
 interface PropertiesPanelProps {
   selectedElement: DesignElement | null;
@@ -13,11 +14,13 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   onElementUpdate,
   variables,
 }) => {
+  const { t } = useTranslation();
+  
   if (!selectedElement) {
     return (
       <div className="w-80 bg-white border-l border-gray-200 p-6">
         <div className="text-center text-gray-500">
-          <p>Select an element to edit properties</p>
+          <p>{t('selectElementToEdit')}</p>
         </div>
       </div>
     );
@@ -33,16 +36,16 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
         {/* Element Type */}
         <div>
           <h3 className="text-lg font-semibold mb-4 capitalize">
-            {selectedElement.type} Properties
+            {selectedElement.type} {t('properties')}
           </h3>
         </div>
 
         {/* Position & Size */}
         <div className="space-y-3">
-          <h4 className="font-medium text-gray-700">Position & Size</h4>
+          <h4 className="font-medium text-gray-700">{t('positionSize')}</h4>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">X</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('x')}</label>
               <input
                 type="number"
                 value={Math.round(selectedElement.position.x)}
@@ -53,7 +56,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Y</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('y')}</label>
               <input
                 type="number"
                 value={Math.round(selectedElement.position.y)}
@@ -64,7 +67,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Width</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('width')}</label>
               <input
                 type="number"
                 value={Math.round(selectedElement.size.width)}
@@ -75,7 +78,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Height</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('height')}</label>
               <input
                 type="number"
                 value={Math.round(selectedElement.size.height)}
@@ -91,7 +94,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
         {/* Rotation & Opacity */}
         <div className="space-y-3">
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Rotation (deg)</label>
+            <label className="block text-sm text-gray-600 mb-1">{t('rotation')}</label>
             <input
               type="number"
               value={selectedElement.rotation}
@@ -100,7 +103,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Opacity</label>
+            <label className="block text-sm text-gray-600 mb-1">{t('opacity')}</label>
             <input
               type="range"
               min="0"
@@ -119,10 +122,10 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
         {/* Text Properties */}
         {selectedElement.type === 'text' && (
           <div className="space-y-3">
-            <h4 className="font-medium text-gray-700">Text Properties</h4>
+            <h4 className="font-medium text-gray-700">{t('textProperties')}</h4>
             
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Text</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('text')}</label>
               <textarea
                 value={selectedElement.text || ''}
                 onChange={(e) => handleUpdate({ text: e.target.value })}
@@ -132,17 +135,15 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Font Family</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('fontFamily')}</label>
               <select
                 value={selectedElement.textStyle?.fontFamily || 'Arial'}
                 onChange={(e) => handleUpdate({
                   textStyle: { 
                     fontFamily: 'Arial',
                     fontSize: 16,
-                    fontWeight: 'normal',
                     color: '#000000',
-                    textAlign: 'left',
-                    ...selectedElement.textStyle, 
+                    ...selectedElement.textStyle,
                     fontFamily: e.target.value 
                   }
                 })}
@@ -157,7 +158,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Font Size</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('fontSize')}</label>
               <input
                 type="number"
                 value={selectedElement.textStyle?.fontSize || 16}
@@ -165,10 +166,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                   textStyle: { 
                     fontFamily: 'Arial',
                     fontSize: 16,
-                    fontWeight: 'normal',
                     color: '#000000',
-                    textAlign: 'left',
-                    ...selectedElement.textStyle, 
+                    ...selectedElement.textStyle,
                     fontSize: parseInt(e.target.value) || 16 
                   }
                 })}
@@ -177,7 +176,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Color</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('color')}</label>
               <input
                 type="color"
                 value={selectedElement.textStyle?.color || '#000000'}
@@ -185,10 +184,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                   textStyle: { 
                     fontFamily: 'Arial',
                     fontSize: 16,
-                    fontWeight: 'normal',
                     color: '#000000',
-                    textAlign: 'left',
-                    ...selectedElement.textStyle, 
+                    ...selectedElement.textStyle,
                     color: e.target.value 
                   }
                 })}
@@ -197,7 +194,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-2">Text Align</label>
+              <label className="block text-sm text-gray-600 mb-2">{t('textAlign')}</label>
               <div className="flex space-x-1">
                 {['left', 'center', 'right'].map((align) => (
                   <button
@@ -206,10 +203,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                       textStyle: { 
                         fontFamily: 'Arial',
                         fontSize: 16,
-                        fontWeight: 'normal',
                         color: '#000000',
-                        textAlign: 'left',
-                        ...selectedElement.textStyle, 
+                        ...selectedElement.textStyle,
                         textAlign: align as any 
                       }
                     })}
@@ -237,10 +232,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                       textStyle: { 
                         fontFamily: 'Arial',
                         fontSize: 16,
-                        fontWeight: 'normal',
                         color: '#000000',
-                        textAlign: 'left',
-                        ...selectedElement.textStyle, 
+                        ...selectedElement.textStyle,
                         verticalAlign: align as any 
                       }
                     })}
@@ -266,10 +259,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                   textStyle: { 
                     fontFamily: 'Arial',
                     fontSize: 16,
-                    fontWeight: 'normal',
                     color: '#000000',
-                    textAlign: 'left',
-                    ...selectedElement.textStyle, 
+                    ...selectedElement.textStyle,
                     fontWeight: e.target.value 
                   }
                 })}
@@ -315,12 +306,30 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             
             <div>
               <label className="block text-sm text-gray-600 mb-1">Background Color</label>
-              <input
-                type="color"
-                value={selectedElement.backgroundColor || '#ffffff'}
-                onChange={(e) => handleUpdate({ backgroundColor: e.target.value })}
-                className="w-full h-10 border border-gray-300 rounded-md"
-              />
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="transparent-bg"
+                    checked={selectedElement.backgroundColor === 'transparent'}
+                    onChange={(e) => handleUpdate({ 
+                      backgroundColor: e.target.checked ? 'transparent' : '#ffffff' 
+                    })}
+                    className="rounded"
+                  />
+                  <label htmlFor="transparent-bg" className="text-sm text-gray-600">
+                     {t('transparent')}
+                   </label>
+                </div>
+                {selectedElement.backgroundColor !== 'transparent' && (
+                  <input
+                    type="color"
+                    value={selectedElement.backgroundColor || '#ffffff'}
+                    onChange={(e) => handleUpdate({ backgroundColor: e.target.value })}
+                    className="w-full h-10 border border-gray-300 rounded-md"
+                  />
+                )}
+              </div>
             </div>
 
             <div>
