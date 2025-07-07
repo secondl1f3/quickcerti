@@ -46,13 +46,21 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
 
     try {
       if (isLogin) {
-        const { error } = await signIn(email, password)
+        console.log('🔄 Attempting login for:', email)
+        const { data, error } = await signIn(email, password)
+        console.log('📊 Login result:', { data, error })
+        
         if (error) {
+          console.error('❌ Login error:', error)
           setError(error.message === 'Invalid login credentials' 
             ? 'Email atau password salah' 
             : error.message)
         } else {
-          onSuccess()
+          console.log('✅ Login successful, waiting for auth state update')
+          // Give AuthContext time to update state before calling onSuccess
+          setTimeout(() => {
+            onSuccess()
+          }, 100)
         }
       } else {
         const { error } = await signUp(email, password)

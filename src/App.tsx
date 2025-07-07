@@ -25,8 +25,8 @@ import { I18nProvider } from './i18n/i18nContext';
 type AppView = 'landing' | 'login' | 'template-selection' | 'editor' | 'profile';
 
 function AppContent() {
+  const { user, signOut } = useAuth();
   const [currentView, setCurrentView] = useState<AppView>('landing');
-  const { user } = useAuth();
   const [showDataManager, setShowDataManager] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -98,12 +98,6 @@ function AppContent() {
 
   // Navigation handlers
   const handleNavigateToView = (view: AppView) => {
-    // Redirect to login if trying to access protected views without authentication
-    if ((view === 'template-selection' || view === 'editor') && !user) {
-      setCurrentView('login');
-      return;
-    }
-    
     setCurrentView(view);
     // Close any open modals when navigating
     setShowUploadTemplate(false);
@@ -141,6 +135,7 @@ function AppContent() {
     <I18nProvider defaultLanguage="id">
       {currentView === 'landing' && (
         <LandingPage 
+          user={user}
           onGetStarted={() => handleNavigateToView('template-selection')} 
           onLogin={() => setCurrentView('login')}
           onProfile={() => setCurrentView('profile')}
@@ -151,10 +146,9 @@ function AppContent() {
         <Login onSuccess={() => handleNavigateToView('template-selection')} />
       )}
       
-      <ProtectedRoute>
-        {(currentView === 'template-selection' || currentView === 'editor' || currentView === 'profile') && (
-          <>
-            {currentView === 'template-selection' && (
+      {(currentView === 'template-selection' || currentView === 'editor' || currentView === 'profile') && (
+        <ProtectedRoute>
+          {currentView === 'template-selection' && (
             <div className="h-screen flex flex-col bg-gray-50">
               <NavigationHeader
                 currentStep="template-selection"
@@ -162,6 +156,8 @@ function AppContent() {
                 onBack={handleBackNavigation}
                 onHome={() => handleNavigateToView('landing')}
                 onViewProfile={() => setCurrentView('profile')}
+                user={user}
+                signOut={signOut}
               />
               <div className="flex-1">
                 <TemplateSelection 
@@ -234,6 +230,8 @@ function AppContent() {
                   canUndo={canUndo}
                   canRedo={canRedo}
                   projectName="Sertifikat Saya"
+                  user={user}
+                  signOut={signOut}
                 />
               <div className="flex-1 flex bg-gray-100">
                 <Sidebar
@@ -289,12 +287,15 @@ function AppContent() {
             </div>
             )}
             
-            {currentView === 'profile' && (
-              <ProfilePage onBack={() => setCurrentView('landing')} />
-            )}
-          </>
-        )}
-      </ProtectedRoute>
+          {currentView === 'profile' && (
+            <ProfilePage 
+              onBack={() => setCurrentView('landing')} 
+              user={user}
+              signOut={signOut}
+            />
+          )}
+        </ProtectedRoute>
+      )}
       
 
     </I18nProvider>

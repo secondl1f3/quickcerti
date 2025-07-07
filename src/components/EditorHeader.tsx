@@ -1,8 +1,11 @@
 import React from 'react';
 import { ArrowLeft, Save, Download, Eye, Settings, Undo, Redo, FileText } from 'lucide-react';
 import { UserProfile } from './UserProfile';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface EditorHeaderProps {
+  user?: SupabaseUser | null;
+  signOut?: () => Promise<{ error: any }>;
   onBack: () => void;
   onSave?: () => void;
   onPreview?: () => void;
@@ -17,6 +20,8 @@ interface EditorHeaderProps {
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
+  user,
+  signOut,
   onBack,
   onSave,
   onPreview,
@@ -151,7 +156,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
           
           <div className="w-px h-6 bg-gray-300 mx-2" />
           
-          <UserProfile onViewProfile={onViewProfile} />
+          <UserProfile user={user} signOut={signOut} onViewProfile={onViewProfile} />
         </div>
       </div>
     </header>

@@ -7,25 +7,27 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { user, loading } = useAuth()
+  const { user, loading, signOut } = useAuth()
 
-  // Show loading spinner while checking authentication
+  console.log('🛡️ ProtectedRoute state:', { hasUser: !!user, loading, userEmail: user?.email })
+
   if (loading) {
+    console.log('⏳ ProtectedRoute: Still loading auth state')
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Memuat...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
-  // Show login if user is not authenticated
   if (!user) {
-    return <Login onSuccess={() => {}} />
+    console.log('🚫 ProtectedRoute: No user, showing login')
+    return <Login onSuccess={() => {
+      console.log('🔄 Login success callback triggered')
+      // Auth state will update automatically via AuthContext
+    }} />
   }
 
-  // Show protected content if user is authenticated
+  console.log('✅ ProtectedRoute: User authenticated, showing protected content')
   return <>{children}</>
 }

@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import { User, LogOut, Settings, ChevronDown } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
+import { User as SupabaseUser } from '@supabase/supabase-js'
 
 interface UserProfileProps {
+  user?: SupabaseUser | null;
+  signOut?: () => Promise<{ error: any }>;
   onViewProfile?: () => void;
 }
 
-export const UserProfile: React.FC<UserProfileProps> = ({ onViewProfile }) => {
-  const { user, signOut } = useAuth()
+export const UserProfile: React.FC<UserProfileProps> = ({ user, signOut, onViewProfile }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 

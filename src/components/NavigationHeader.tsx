@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Home, FileText, Edit3 } from 'lucide-react';
 import { UserProfile } from './UserProfile';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface NavigationStep {
   id: string;
@@ -12,6 +13,8 @@ interface NavigationStep {
 interface NavigationHeaderProps {
   currentStep: string;
   steps: NavigationStep[];
+  user?: SupabaseUser | null;
+  signOut?: () => Promise<{ error: any }>;
   onBack?: () => void;
   onHome?: () => void;
   onViewProfile?: () => void;
@@ -22,6 +25,8 @@ interface NavigationHeaderProps {
 export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   currentStep,
   steps,
+  user,
+  signOut,
   onBack,
   onHome,
   onViewProfile,
@@ -89,7 +94,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         
         <div className="w-px h-6 bg-gray-300" />
         
-        <UserProfile onViewProfile={onViewProfile} />
+        <UserProfile user={user} signOut={signOut} onViewProfile={onViewProfile} />
       </div>
     </div>
   );

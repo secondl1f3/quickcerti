@@ -1,15 +1,15 @@
 import React from 'react';
 import { ArrowRight, CheckCircle, Zap, Users, Download, Palette, FileText, Star, User } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface LandingPageProps {
+  user?: SupabaseUser | null;
   onGetStarted: () => void;
   onLogin?: () => void;
   onProfile?: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onProfile }) => {
-  const { user } = useAuth();
+export const LandingPage: React.FC<LandingPageProps> = ({ user, onGetStarted, onLogin, onProfile }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50">
       {/* Header */}

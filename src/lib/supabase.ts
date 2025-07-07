@@ -203,6 +203,22 @@ const pointHelpers = {
     return { data: { newBalance, transaction }, error: transactionError }
   },
 
+  // Record point transaction (for pending transactions)
+  recordPointTransaction: async (userId: string, type: 'purchase' | 'usage' | 'bonus', amount: number, description: string, referenceId?: string) => {
+    const { data, error } = await supabase
+      .from('point_transactions')
+      .insert({
+        user_id: userId,
+        type,
+        amount,
+        description,
+        reference_id: referenceId
+      })
+      .select()
+      .single()
+    return { data, error }
+  },
+
   // Get point transactions history
   getPointTransactions: async (userId: string, limit = 50) => {
     const { data, error } = await supabase
