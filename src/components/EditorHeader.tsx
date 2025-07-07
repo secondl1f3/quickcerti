@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Save, Download, Eye, Settings, Undo, Redo, FileText } from 'lucide-react';
+import { UserProfile } from './UserProfile';
 
 interface EditorHeaderProps {
   onBack: () => void;
@@ -8,6 +9,7 @@ interface EditorHeaderProps {
   onExport?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
+  onViewProfile?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
   projectName?: string;
@@ -21,6 +23,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   onExport,
   onUndo,
   onRedo,
+  onViewProfile,
   canUndo = false,
   canRedo = false,
   projectName = 'Sertifikat Tanpa Judul',
@@ -145,6 +148,10 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
               <span>Export</span>
             </button>
           )}
+          
+          <div className="w-px h-6 bg-gray-300 mx-2" />
+          
+          <UserProfile onViewProfile={onViewProfile} />
         </div>
       </div>
     </header>

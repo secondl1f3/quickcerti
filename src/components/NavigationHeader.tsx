@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Home, FileText, Edit3 } from 'lucide-react';
+import { UserProfile } from './UserProfile';
 
 interface NavigationStep {
   id: string;
@@ -13,6 +14,7 @@ interface NavigationHeaderProps {
   steps: NavigationStep[];
   onBack?: () => void;
   onHome?: () => void;
+  onViewProfile?: () => void;
   showBackButton?: boolean;
   showHomeButton?: boolean;
 }
@@ -22,6 +24,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   steps,
   onBack,
   onHome,
+  onViewProfile,
   showBackButton = true,
   showHomeButton = true,
 }) => {
@@ -72,16 +75,22 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         </nav>
       </div>
 
-      {/* Right side - Home button */}
-      {showHomeButton && onHome && (
-        <button
-          onClick={onHome}
-          className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <Home className="w-4 h-4" />
-          <span className="text-sm font-medium">Beranda</span>
-        </button>
-      )}
+      {/* Right side - Home button and User Profile */}
+      <div className="flex items-center space-x-3">
+        {showHomeButton && onHome && (
+          <button
+            onClick={onHome}
+            className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            <span className="text-sm font-medium">Beranda</span>
+          </button>
+        )}
+        
+        <div className="w-px h-6 bg-gray-300" />
+        
+        <UserProfile onViewProfile={onViewProfile} />
+      </div>
     </div>
   );
 };

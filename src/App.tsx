@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, forwardRef, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Canvas } from './components/Canvas';
 import { PropertiesPanel } from './components/PropertiesPanel';
@@ -12,15 +12,21 @@ import { TemplateSelection } from './components/TemplateSelection';
 import { UploadTemplate } from './components/UploadTemplate';
 import { NavigationHeader, APP_NAVIGATION_STEPS } from './components/NavigationHeader';
 import { EditorHeader } from './components/EditorHeader';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Login } from './components/Login';
 import { useDesignStore } from './store/designStore';
 import { useDataStore } from './store/dataStore';
 import { DesignElement, Tool } from './types';
+import { UserProfile } from './components/UserProfile';
+import { ProfilePage } from './components/ProfilePage';
 import { I18nProvider } from './i18n/i18nContext';
 
-type AppView = 'landing' | 'template-selection' | 'editor';
+type AppView = 'landing' | 'login' | 'template-selection' | 'editor' | 'profile';
 
-function App() {
+function AppContent() {
   const [currentView, setCurrentView] = useState<AppView>('landing');
+  const { user } = useAuth();
   const [showDataManager, setShowDataManager] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -92,6 +98,12 @@ function App() {
 
   // Navigation handlers
   const handleNavigateToView = (view: AppView) => {
+    // Redirect to login if trying to access protected views without authentication
+    if ((view === 'template-selection' || view === 'editor') && !user) {
+      setCurrentView('login');
+      return;
+    }
+    
     setCurrentView(view);
     // Close any open modals when navigating
     setShowUploadTemplate(false);
@@ -110,6 +122,9 @@ function App() {
       case 'template-selection':
         setCurrentView('landing');
         break;
+      case 'login':
+        setCurrentView('landing');
+        break;
       default:
         break;
     }
@@ -122,151 +137,175 @@ function App() {
     }));
   };
 
-  if (currentView === 'landing') {
-    return (
-      <I18nProvider defaultLanguage="id">
-        <LandingPage onGetStarted={() => handleNavigateToView('template-selection')} />
-      </I18nProvider>
-    );
-  }
-
-  if (currentView === 'template-selection') {
-    return (
-      <I18nProvider defaultLanguage="id">
-        <div className="h-screen flex flex-col bg-gray-50">
-          <NavigationHeader
-            currentStep="template-selection"
-            steps={getNavigationSteps()}
-            onBack={handleBackNavigation}
-            onHome={() => handleNavigateToView('landing')}
-          />
-          <div className="flex-1">
-            <TemplateSelection 
-              onCreateNew={() => {
-                console.log('Create New clicked');
-                handleNavigateToView('editor');
-              }}
-              onUseTemplate={() => {
-                console.log('Use Template clicked');
-                setShowTemplateModal(true);
-              }}
-              onUploadTemplate={() => {
-                console.log('Upload Template clicked');
-                setShowUploadTemplate(true);
-              }}
-            />
-          </div>
-          
-          {/* Modals for template-selection view */}
-          {showTemplateModal && (
-            <TemplateModal 
-              onClose={() => setShowTemplateModal(false)}
-              onTemplateSelect={() => {
-                setShowTemplateModal(false);
-                handleNavigateToView('editor');
-              }}
-            />
-          )}
-          
-          {showUploadTemplate && (
-            <UploadTemplate 
-              onClose={() => setShowUploadTemplate(false)}
-              onUploadSuccess={(imageUrl) => {
-                // Create a background image element from the uploaded image
-                const backgroundElement = {
-                  id: Date.now().toString(),
-                  type: 'image' as const,
-                  x: 0,
-                  y: 0,
-                  width: 800,
-                  height: 600,
-                  position: { x: 0, y: 0 },
-                  size: { width: 800, height: 600 },
-                  rotation: 0,
-                  opacity: 1,
-                  zIndex: 0,
-                  imageUrl: imageUrl,
-                  locked: true // Lock the background so it can't be accidentally moved
-                };
-                
-                setElements([backgroundElement]);
-                setShowUploadTemplate(false);
-                handleNavigateToView('editor');
-              }}
-            />
-          )}
-        </div>
-      </I18nProvider>
-    );
-  }
-
   return (
     <I18nProvider defaultLanguage="id">
-      <div className="h-screen flex flex-col bg-gray-50">
-        <EditorHeader
-          onBack={() => handleNavigateToView('template-selection')}
-          onSave={() => console.log('Save project')}
-          onPreview={() => setShowPreviewModal(true)}
-          onExport={() => setShowExportModal(true)}
-          onUndo={() => undo()}
-          onRedo={() => redo()}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          projectName="Sertifikat Saya"
+      {currentView === 'landing' && (
+        <LandingPage 
+          onGetStarted={() => handleNavigateToView('template-selection')} 
+          onLogin={() => setCurrentView('login')}
+          onProfile={() => setCurrentView('profile')}
         />
-        <div className="flex-1 flex bg-gray-100">
-          <Sidebar
-            activeTool={activeTool}
-            onToolChange={setActiveTool}
-            onDataManager={() => setShowDataManager(true)}
-            onGenerate={() => setShowGenerateModal(true)}
-            onTemplates={() => setShowTemplateModal(true)}
-            onPreview={() => setShowPreviewModal(true)}
-            onBackToTemplateSelection={() => handleNavigateToView('template-selection')}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            onUndo={undo}
-            onRedo={redo}
-          />
-          
-          <div className="flex-1 relative">
-            <Canvas
-              ref={canvasRef}
-              activeTool={activeTool}
-              elements={elements}
-              selectedElement={selectedElement}
-              onCanvasClick={handleCanvasClick}
-              onElementClick={handleElementClick}
-              onElementUpdate={updateElement}
-              onElementAdd={addElement}
-            />
-          </div>
-          
-          <PropertiesPanel
-            selectedElement={selectedElement}
-            onElementUpdate={updateElement}
-            variables={variables}
-          />
-        </div>
+      )}
+      
+      {currentView === 'login' && (
+        <Login onSuccess={() => handleNavigateToView('template-selection')} />
+      )}
+      
+      <ProtectedRoute>
+        {(currentView === 'template-selection' || currentView === 'editor' || currentView === 'profile') && (
+          <>
+            {currentView === 'template-selection' && (
+            <div className="h-screen flex flex-col bg-gray-50">
+              <NavigationHeader
+                currentStep="template-selection"
+                steps={getNavigationSteps()}
+                onBack={handleBackNavigation}
+                onHome={() => handleNavigateToView('landing')}
+                onViewProfile={() => setCurrentView('profile')}
+              />
+              <div className="flex-1">
+                <TemplateSelection 
+                  onCreateNew={() => {
+                    console.log('Create New clicked');
+                    handleNavigateToView('editor');
+                  }}
+                  onUseTemplate={() => {
+                    console.log('Use Template clicked');
+                    setShowTemplateModal(true);
+                  }}
+                  onUploadTemplate={() => {
+                    console.log('Upload Template clicked');
+                    setShowUploadTemplate(true);
+                  }}
+                />
+              </div>
+              
+              {/* Modals for template-selection view */}
+              {showTemplateModal && (
+                <TemplateModal 
+                  onClose={() => setShowTemplateModal(false)}
+                  onTemplateSelect={() => {
+                    setShowTemplateModal(false);
+                    handleNavigateToView('editor');
+                  }}
+                />
+              )}
+              
+              {showUploadTemplate && (
+                <UploadTemplate 
+                  onClose={() => setShowUploadTemplate(false)}
+                  onUploadSuccess={(imageUrl) => {
+                    // Create a background image element from the uploaded image
+                    const backgroundElement = {
+                      id: Date.now().toString(),
+                      type: 'image' as const,
+                      x: 0,
+                      y: 0,
+                      width: 800,
+                      height: 600,
+                      position: { x: 0, y: 0 },
+                      size: { width: 800, height: 600 },
+                      rotation: 0,
+                      opacity: 1,
+                      zIndex: 0,
+                      imageUrl: imageUrl,
+                      locked: true // Lock the background so it can't be accidentally moved
+                    };
+                    
+                    setElements([backgroundElement]);
+                    setShowUploadTemplate(false);
+                    handleNavigateToView('editor');
+                  }}
+                />
+              )}
+            </div>
+          )}
 
-        {/* Modals */}
-        {showDataManager && (
-          <DataManager onClose={() => setShowDataManager(false)} />
+          {currentView === 'editor' && (
+            <div className="h-screen flex flex-col bg-gray-50">
+              <EditorHeader
+                  onBack={() => handleNavigateToView('template-selection')}
+                  onSave={() => console.log('Save project')}
+                  onPreview={() => setShowPreviewModal(true)}
+                  onExport={() => setShowExportModal(true)}
+                  onUndo={() => undo()}
+                  onRedo={() => redo()}
+                  onViewProfile={() => setCurrentView('profile')}
+                  canUndo={canUndo}
+                  canRedo={canRedo}
+                  projectName="Sertifikat Saya"
+                />
+              <div className="flex-1 flex bg-gray-100">
+                <Sidebar
+                  activeTool={activeTool}
+                  onToolChange={setActiveTool}
+                  onDataManager={() => setShowDataManager(true)}
+                  onGenerate={() => setShowGenerateModal(true)}
+                  onTemplates={() => setShowTemplateModal(true)}
+                  onPreview={() => setShowPreviewModal(true)}
+                  onBackToTemplateSelection={() => handleNavigateToView('template-selection')}
+                  canUndo={canUndo}
+                  canRedo={canRedo}
+                  onUndo={undo}
+                  onRedo={redo}
+                />
+                
+                <div className="flex-1 relative">
+                  <Canvas
+                    ref={canvasRef}
+                    activeTool={activeTool}
+                    elements={elements}
+                    selectedElement={selectedElement}
+                    onCanvasClick={handleCanvasClick}
+                    onElementClick={handleElementClick}
+                    onElementUpdate={updateElement}
+                    onElementAdd={addElement}
+                  />
+                </div>
+                
+                <PropertiesPanel
+                  selectedElement={selectedElement}
+                  onElementUpdate={updateElement}
+                  variables={variables}
+                />
+              </div>
+
+              {/* Modals */}
+              {showDataManager && (
+                <DataManager onClose={() => setShowDataManager(false)} />
+              )}
+              
+              {showGenerateModal && (
+                <GenerateModal onClose={() => setShowGenerateModal(false)} />
+              )}
+              
+              {showPreviewModal && (
+                <PreviewModal onClose={() => setShowPreviewModal(false)} />
+              )}
+              
+              {showExportModal && (
+                <ExportModal onClose={() => setShowExportModal(false)} />
+              )}
+            </div>
+            )}
+            
+            {currentView === 'profile' && (
+              <ProfilePage onBack={() => setCurrentView('landing')} />
+            )}
+          </>
         )}
-        
-        {showGenerateModal && (
-          <GenerateModal onClose={() => setShowGenerateModal(false)} />
-        )}
-        
-        {showPreviewModal && (
-          <PreviewModal onClose={() => setShowPreviewModal(false)} />
-        )}
-        
-        {showExportModal && (
-          <ExportModal onClose={() => setShowExportModal(false)} />
-        )}
-      </div>
+      </ProtectedRoute>
+      
+
     </I18nProvider>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

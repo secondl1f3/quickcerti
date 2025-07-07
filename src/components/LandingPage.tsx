@@ -1,11 +1,15 @@
 import React from 'react';
-import { ArrowRight, CheckCircle, Zap, Users, Download, Palette, FileText, Star } from 'lucide-react';
+import { ArrowRight, CheckCircle, Zap, Users, Download, Palette, FileText, Star, User } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LandingPageProps {
   onGetStarted: () => void;
+  onLogin?: () => void;
+  onProfile?: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onProfile }) => {
+  const { user } = useAuth();
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50">
       {/* Header */}
@@ -23,12 +27,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
               <a href="#harga" className="text-gray-600 hover:text-teal-600 transition-colors">Harga</a>
               <a href="#testimoni" className="text-gray-600 hover:text-teal-600 transition-colors">Testimoni</a>
             </nav>
-            <button
-              onClick={onGetStarted}
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 font-medium"
-            >
-              Mulai Gratis
-            </button>
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={onProfile}
+                    className="flex items-center space-x-2 text-gray-600 hover:text-teal-600 transition-colors font-medium"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Profil</span>
+                  </button>
+                  <button
+                    onClick={onGetStarted}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 font-medium"
+                  >
+                    Dashboard
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {onLogin && (
+                    <button
+                      onClick={onLogin}
+                      className="text-gray-600 hover:text-teal-600 transition-colors font-medium"
+                    >
+                      Masuk
+                    </button>
+                  )}
+                  <button
+                    onClick={onGetStarted}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 font-medium"
+                  >
+                    Mulai Gratis
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>

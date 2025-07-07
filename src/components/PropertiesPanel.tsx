@@ -142,7 +142,9 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                   textStyle: { 
                     fontFamily: 'Arial',
                     fontSize: 16,
+                    fontWeight: 'normal',
                     color: '#000000',
+                    textAlign: 'left' as const,
                     ...selectedElement.textStyle,
                     fontFamily: e.target.value 
                   }
@@ -166,7 +168,9 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                   textStyle: { 
                     fontFamily: 'Arial',
                     fontSize: 16,
+                    fontWeight: 'normal',
                     color: '#000000',
+                    textAlign: 'left' as const,
                     ...selectedElement.textStyle,
                     fontSize: parseInt(e.target.value) || 16 
                   }
@@ -184,7 +188,9 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                   textStyle: { 
                     fontFamily: 'Arial',
                     fontSize: 16,
+                    fontWeight: 'normal',
                     color: '#000000',
+                    textAlign: 'left' as const,
                     ...selectedElement.textStyle,
                     color: e.target.value 
                   }
@@ -203,9 +209,11 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                       textStyle: { 
                         fontFamily: 'Arial',
                         fontSize: 16,
+                        fontWeight: 'normal',
                         color: '#000000',
+                        textAlign: 'left' as const,
                         ...selectedElement.textStyle,
-                        textAlign: align as any 
+                        textAlign: align as 'left' | 'center' | 'right'
                       }
                     })}
                     className={`px-3 py-2 rounded-md text-sm border ${
@@ -232,9 +240,11 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                       textStyle: { 
                         fontFamily: 'Arial',
                         fontSize: 16,
+                        fontWeight: 'normal',
                         color: '#000000',
+                        textAlign: 'left' as const,
                         ...selectedElement.textStyle,
-                        verticalAlign: align as any 
+                        verticalAlign: align as 'top' | 'center' | 'bottom'
                       }
                     })}
                     className={`px-3 py-2 rounded-md text-sm border ${
@@ -259,9 +269,11 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                   textStyle: { 
                     fontFamily: 'Arial',
                     fontSize: 16,
+                    fontWeight: 'normal',
                     color: '#000000',
+                    textAlign: 'left' as const,
                     ...selectedElement.textStyle,
-                    fontWeight: e.target.value 
+                    fontWeight: e.target.value
                   }
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
@@ -338,7 +350,12 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                 type="color"
                 value={selectedElement.borderStyle?.color || '#000000'}
                 onChange={(e) => handleUpdate({
-                  borderStyle: { ...selectedElement.borderStyle, color: e.target.value, width: selectedElement.borderStyle?.width || 1, style: selectedElement.borderStyle?.style || 'solid' }
+                  borderStyle: { 
+                    ...selectedElement.borderStyle, 
+                    color: e.target.value, 
+                    width: selectedElement.borderStyle?.width || 1, 
+                    style: selectedElement.borderStyle?.style || 'solid' 
+                  }
                 })}
                 className="w-full h-10 border border-gray-300 rounded-md"
               />
@@ -350,7 +367,12 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                 type="number"
                 value={selectedElement.borderStyle?.width || 0}
                 onChange={(e) => handleUpdate({
-                  borderStyle: { ...selectedElement.borderStyle, width: parseInt(e.target.value) || 0, color: selectedElement.borderStyle?.color || '#000000', style: selectedElement.borderStyle?.style || 'solid' }
+                  borderStyle: { 
+                    ...selectedElement.borderStyle, 
+                    width: parseInt(e.target.value) || 0, 
+                    color: selectedElement.borderStyle?.color || '#000000', 
+                    style: selectedElement.borderStyle?.style || 'solid' 
+                  }
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
               />
@@ -369,7 +391,12 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                 type="color"
                 value={selectedElement.lineStyle?.color || '#000000'}
                 onChange={(e) => handleUpdate({
-                  lineStyle: { ...selectedElement.lineStyle, color: e.target.value, width: selectedElement.lineStyle?.width || 1, style: selectedElement.lineStyle?.style || 'solid' }
+                  lineStyle: { 
+                    ...selectedElement.lineStyle, 
+                    color: e.target.value, 
+                    width: selectedElement.lineStyle?.width || 1, 
+                    style: selectedElement.lineStyle?.style || 'solid' 
+                  }
                 })}
                 className="w-full h-10 border border-gray-300 rounded-md"
               />
@@ -381,7 +408,12 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                 type="number"
                 value={selectedElement.lineStyle?.width || 1}
                 onChange={(e) => handleUpdate({
-                  lineStyle: { ...selectedElement.lineStyle, width: parseInt(e.target.value) || 1, color: selectedElement.lineStyle?.color || '#000000', style: selectedElement.lineStyle?.style || 'solid' }
+                  lineStyle: { 
+                    ...selectedElement.lineStyle, 
+                    width: parseInt(e.target.value) || 1, 
+                    color: selectedElement.lineStyle?.color || '#000000', 
+                    style: selectedElement.lineStyle?.style || 'solid' 
+                  }
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
               />
@@ -392,7 +424,12 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
               <select
                 value={selectedElement.lineStyle?.style || 'solid'}
                 onChange={(e) => handleUpdate({
-                  lineStyle: { ...selectedElement.lineStyle, style: e.target.value as any, color: selectedElement.lineStyle?.color || '#000000', width: selectedElement.lineStyle?.width || 1 }
+                  lineStyle: { 
+                    ...selectedElement.lineStyle, 
+                    style: e.target.value as 'solid' | 'dashed' | 'dotted', 
+                    color: selectedElement.lineStyle?.color || '#000000', 
+                    width: selectedElement.lineStyle?.width || 1 
+                  }
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
               >
