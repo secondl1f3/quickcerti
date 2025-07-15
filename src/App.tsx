@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Canvas } from './components/Canvas';
 import { PropertiesPanel } from './components/PropertiesPanel';
@@ -10,17 +10,35 @@ import { ExportModal } from './components/ExportModal';
 import { LandingPage } from './components/LandingPage';
 import { TemplateSelection } from './components/TemplateSelection';
 import { UploadTemplate } from './components/UploadTemplate';
+import { AuthWrapper } from './components/AuthWrapper';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { NavigationHeader, APP_NAVIGATION_STEPS } from './components/NavigationHeader';
 import { EditorHeader } from './components/EditorHeader';
 import { useDesignStore } from './store/designStore';
 import { useDataStore } from './store/dataStore';
+import { useAuthStore } from './store/authStore';
 import { DesignElement, Tool } from './types';
 import { I18nProvider } from './i18n/i18nContext';
 
-type AppView = 'landing' | 'template-selection' | 'editor';
+type AppView = 'auth' | 'landing' | 'template-selection' | 'editor';
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>('landing');
+  const { isAuthenticated, initializeAuth, signOut } = useAuthStore();
+
+  // Initialize authentication on app start
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
+  // Handle authentication state changes
+  useEffect(() => {
+    if (isAuthenticated && currentView === 'auth') {
+      setCurrentView('landing');
+    }
+    // Don't redirect unauthenticated users away from landing page
+    // They can access landing page but need to login for other features
+  }, [isAuthenticated, currentView]);
   const [showDataManager, setShowDataManager] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -92,6 +110,13 @@ function App() {
 
   // Navigation handlers
   const handleNavigateToView = (view: AppView) => {
+    // Allow unauthenticated users to access landing page
+    // Prevent navigation to other protected views if not authenticated
+    if (!isAuthenticated && view !== 'auth' && view !== 'landing') {
+      setCurrentView('auth');
+      return;
+    }
+    
     setCurrentView(view);
     // Close any open modals when navigating
     setShowUploadTemplate(false);
@@ -102,6 +127,22 @@ function App() {
     setShowExportModal(false);
   };
 
+  const handleSignOut = () => {
+    signOut();
+    setCurrentView('auth');
+    // Close any open modals
+    setShowUploadTemplate(false);
+    setShowDataManager(false);
+    setShowGenerateModal(false);
+    setShowTemplateModal(false);
+    setShowPreviewModal(false);
+    setShowExportModal(false);
+  };
+
+  const handleAuthSuccess = () => {
+    setCurrentView('landing');
+  };
+
   const handleBackNavigation = () => {
     switch (currentView) {
       case 'editor':
@@ -109,6 +150,13 @@ function App() {
         break;
       case 'template-selection':
         setCurrentView('landing');
+        break;
+      case 'landing':
+        // Don't allow going back from landing if authenticated
+        // User should use sign out instead
+        break;
+      case 'auth':
+        // No back navigation from auth
         break;
       default:
         break;
@@ -122,10 +170,24 @@ function App() {
     }));
   };
 
+  if (currentView === 'auth') {
+    return (
+      <I18nProvider defaultLanguage="id">
+        <AuthWrapper onAuthSuccess={handleAuthSuccess} />
+      </I18nProvider>
+    );
+  }
+
   if (currentView === 'landing') {
     return (
       <I18nProvider defaultLanguage="id">
-        <LandingPage onGetStarted={() => handleNavigateToView('template-selection')} />
+        <LandingPage onGetStarted={() => {
+          if (isAuthenticated) {
+            handleNavigateToView('template-selection');
+          } else {
+            setCurrentView('auth');
+          }
+        }} />
       </I18nProvider>
     );
   }
@@ -133,15 +195,17 @@ function App() {
   if (currentView === 'template-selection') {
     return (
       <I18nProvider defaultLanguage="id">
-        <div className="h-screen flex flex-col bg-gray-50">
-          <NavigationHeader
-            currentStep="template-selection"
-            steps={getNavigationSteps()}
-            onBack={handleBackNavigation}
-            onHome={() => handleNavigateToView('landing')}
-          />
-          <div className="flex-1">
-            <TemplateSelection 
+        <ProtectedRoute onRedirectToAuth={() => setCurrentView('auth')}>
+          <div className="h-screen flex flex-col bg-gray-50">
+            <NavigationHeader
+              currentStep="template-selection"
+              steps={getNavigationSteps()}
+              onBack={handleBackNavigation}
+              onHome={() => handleNavigateToView('landing')}
+              onSignOut={handleSignOut}
+            />
+            <div className="flex-1">
+              <TemplateSelection 
               onCreateNew={() => {
                 console.log('Create New clicked');
                 handleNavigateToView('editor');
@@ -196,24 +260,27 @@ function App() {
             />
           )}
         </div>
+        </ProtectedRoute>
       </I18nProvider>
     );
   }
 
   return (
     <I18nProvider defaultLanguage="id">
-      <div className="h-screen flex flex-col bg-gray-50">
-        <EditorHeader
-          onBack={() => handleNavigateToView('template-selection')}
-          onSave={() => console.log('Save project')}
-          onPreview={() => setShowPreviewModal(true)}
-          onExport={() => setShowExportModal(true)}
-          onUndo={() => undo()}
-          onRedo={() => redo()}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          projectName="Sertifikat Saya"
-        />
+      <ProtectedRoute onRedirectToAuth={() => setCurrentView('auth')}>
+        <div className="h-screen flex flex-col bg-gray-50">
+          <EditorHeader
+            onBack={() => handleNavigateToView('template-selection')}
+            onSave={() => console.log('Save project')}
+            onPreview={() => setShowPreviewModal(true)}
+            onExport={() => setShowExportModal(true)}
+            onUndo={() => undo()}
+            onRedo={() => redo()}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            projectName="Sertifikat Saya"
+            onSignOut={handleSignOut}
+          />
         <div className="flex-1 flex bg-gray-100">
           <Sidebar
             activeTool={activeTool}
@@ -265,7 +332,8 @@ function App() {
         {showExportModal && (
           <ExportModal onClose={() => setShowExportModal(false)} />
         )}
-      </div>
+        </div>
+      </ProtectedRoute>
     </I18nProvider>
   );
 }

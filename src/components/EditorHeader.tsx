@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Save, Download, Eye, Settings, Undo, Redo, FileText } from 'lucide-react';
+import { ArrowLeft, Save, Download, Eye, Settings, Undo, Redo, FileText, LogOut } from 'lucide-react';
 
 interface EditorHeaderProps {
   onBack: () => void;
@@ -12,6 +12,7 @@ interface EditorHeaderProps {
   canRedo?: boolean;
   projectName?: string;
   onProjectNameChange?: (name: string) => void;
+  onSignOut?: () => void;
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
@@ -25,6 +26,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   canRedo = false,
   projectName = 'Sertifikat Tanpa Judul',
   onProjectNameChange,
+  onSignOut,
 }) => {
   const [isEditingName, setIsEditingName] = React.useState(false);
   const [tempName, setTempName] = React.useState(projectName);
@@ -143,6 +145,17 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
             >
               <Download className="w-4 h-4" />
               <span>Export</span>
+            </button>
+          )}
+          
+          {onSignOut && (
+            <button
+              onClick={onSignOut}
+              className="flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Keluar"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Keluar</span>
             </button>
           )}
         </div>
