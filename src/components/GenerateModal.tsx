@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { X, FileText, Image, Download, AlertCircle, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, FileText, Image, Download, AlertCircle, CheckCircle, Coins } from 'lucide-react';
 import { useDataStore } from '../store/dataStore';
 import { useDesignStore } from '../store/designStore';
 import { CertificateGenerator } from '../utils/certificateGenerator';
 import { useTranslation } from '../i18n/i18nContext';
+import { useAuthStore } from '../store/authStore';
+import { usePointStore } from '../store/pointStore';
 
 interface GenerateModalProps {
   onClose: () => void;
@@ -12,6 +14,8 @@ interface GenerateModalProps {
 export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
   const { data, variables } = useDataStore();
   const { elements } = useDesignStore();
+  const { user } = useAuthStore();
+  const { userPoints, fetchUserPoints, createTransaction } = usePointStore();
   const [format, setFormat] = useState<'pdf' | 'png' | 'jpg'>('pdf');
   const [quality, setQuality] = useState(90);
   const [filenameField, setFilenameField] = useState(variables[0]?.name || '');
@@ -19,7 +23,17 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const { t } = useTranslation();
+
+  // Fetch user points when modal opens
+  useEffect(() => {
+    fetchUserPoints();
+  }, [fetchUserPoints]);
+
+  // Calculate required points (1 point per certificate)
+  const requiredPoints = data.length;
+  const hasEnoughPoints = userPoints >= requiredPoints;
 
   const handleGenerate = async () => {
     if (data.length === 0) {
@@ -32,12 +46,35 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
       return;
     }
 
+    if (!hasEnoughPoints) {
+      setError(`Insufficient points. Required: ${requiredPoints}, Available: ${userPoints}`);
+      return;
+    }
+
+    if (!showConfirmation) {
+      setShowConfirmation(true);
+      return;
+    }
+
     setIsGenerating(true);
     setProgress(0);
     setError(null);
     setSuccess(false);
 
     try {
+      // Deduct points before generation
+      if (user?.id) {
+        await createTransaction({
+          userId: user.id,
+          type: 'USAGE',
+          amount: requiredPoints,
+          description: `Certificate download - ${data.length} ${format.toUpperCase()} files`
+        });
+        
+        // Refresh user points
+        await fetchUserPoints();
+      }
+
       const generator = new CertificateGenerator(elements, variables);
       
       await generator.generateCertificates(
@@ -61,6 +98,15 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleConfirmGenerate = () => {
+    setShowConfirmation(false);
+    handleGenerate();
+  };
+
+  const handleCancelConfirmation = () => {
+    setShowConfirmation(false);
   };
 
   const getFileExtension = () => {
@@ -166,6 +212,38 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
             </p>
           </div>
 
+          {/* Point Balance & Cost */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium text-gray-900">Point Balance</h3>
+              <div className="flex items-center space-x-1">
+                <Coins size={16} className="text-yellow-600" />
+                <span className="font-medium text-gray-900">{userPoints}</span>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Required points:</span>
+                <span className={`font-medium ${hasEnoughPoints ? 'text-green-600' : 'text-red-600'}`}>
+                  {requiredPoints}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Remaining after download:</span>
+                <span className={`font-medium ${hasEnoughPoints ? 'text-gray-900' : 'text-red-600'}`}>
+                  {hasEnoughPoints ? userPoints - requiredPoints : 'Insufficient'}
+                </span>
+              </div>
+            </div>
+            {!hasEnoughPoints && (
+              <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-800">
+                  ⚠️ You need {requiredPoints - userPoints} more points to download
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Generation Info */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <h3 className="font-medium text-gray-900 mb-2">{t('downloadInformation')}</h3>
@@ -219,6 +297,35 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
             </div>
           )}
 
+          {/* Confirmation Dialog */}
+          {showConfirmation && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <AlertCircle size={20} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="font-medium text-yellow-800 mb-2">Confirm Download</h4>
+                  <p className="text-sm text-yellow-700 mb-3">
+                    This will deduct <strong>{requiredPoints} points</strong> from your balance to download {data.length} {format.toUpperCase()} {data.length === 1 ? 'file' : 'files'}.
+                  </p>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={handleCancelConfirmation}
+                      className="px-3 py-1 text-sm border border-yellow-300 text-yellow-700 rounded hover:bg-yellow-100 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleConfirmGenerate}
+                      className="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors"
+                    >
+                      Confirm & Download
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="flex space-x-3">
             <button
@@ -230,13 +337,15 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
             </button>
             <button
               onClick={handleGenerate}
-              disabled={isGenerating || data.length === 0 || elements.length === 0}
+              disabled={isGenerating || data.length === 0 || elements.length === 0 || !hasEnoughPoints}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               <Download size={20} />
               <span>
                 {isGenerating 
                   ? `${progress}%` 
+                  : showConfirmation
+                  ? 'Confirming...'
                   : t('generateDownload')
                 }
               </span>

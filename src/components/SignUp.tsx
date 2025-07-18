@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, User, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Lock, AlertCircle, CheckCircle, UserCheck, Phone } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { SignUpRequest } from '../services/authService';
 
@@ -15,6 +15,8 @@ export const SignUp: React.FC<SignUpProps> = ({ onSignInClick, onSuccess }) => {
     email: '',
     password: '',
     role: ['user'],
+    fullName: '',
+    phone: '',
   });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +31,21 @@ export const SignUp: React.FC<SignUpProps> = ({ onSignInClick, onSuccess }) => {
       errors.username = 'Username is required';
     } else if (formData.username.length < 3) {
       errors.username = 'Username must be at least 3 characters';
+    }
+
+    // Full name validation
+    if (!formData.fullName?.trim()) {
+      errors.fullName = 'Full name is required';
+    } else if (formData.fullName.trim().length < 2) {
+      errors.fullName = 'Full name must be at least 2 characters';
+    }
+
+    // Phone validation (optional)
+    if (formData.phone && formData.phone.trim()) {
+      const phoneRegex = /^[+]?[0-9\s\-\(\)]{10,}$/;
+      if (!phoneRegex.test(formData.phone.trim())) {
+        errors.phone = 'Please enter a valid phone number';
+      }
     }
 
     // Email validation
@@ -133,6 +150,30 @@ export const SignUp: React.FC<SignUpProps> = ({ onSignInClick, onSuccess }) => {
             )}
           </div>
 
+          {/* Full Name Field */}
+          <div>
+            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+              Full Name
+            </label>
+            <div className="relative">
+              <UserCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                id="fullName"
+                type="text"
+                value={formData.fullName || ''}
+                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors ${
+                  validationErrors.fullName ? 'border-red-300' : 'border-gray-300'
+                }`}
+                placeholder="Enter your full name"
+                disabled={isLoading}
+              />
+            </div>
+            {validationErrors.fullName && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.fullName}</p>
+            )}
+          </div>
+
           {/* Email Field */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -154,6 +195,30 @@ export const SignUp: React.FC<SignUpProps> = ({ onSignInClick, onSuccess }) => {
             </div>
             {validationErrors.email && (
               <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+            )}
+          </div>
+
+          {/* Phone Field */}
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+              Phone Number <span className="text-gray-400 text-sm">(Optional)</span>
+            </label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                id="phone"
+                type="tel"
+                value={formData.phone || ''}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors ${
+                  validationErrors.phone ? 'border-red-300' : 'border-gray-300'
+                }`}
+                placeholder="Enter your phone number"
+                disabled={isLoading}
+              />
+            </div>
+            {validationErrors.phone && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.phone}</p>
             )}
           </div>
 

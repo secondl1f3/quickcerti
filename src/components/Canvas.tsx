@@ -123,7 +123,7 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
               rotation: 0,
               opacity: 1,
               zIndex: elements.length,
-              imageUrl: 'https://via.placeholder.com/150x150?text=Image',
+              imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjNGNEY2Ii8+CjxyZWN0IHg9IjYyLjUiIHk9IjYwIiB3aWR0aD0iMjUiIGhlaWdodD0iMzAiIGZpbGw9IiM5Q0EzQUYiLz4KPHR4dCB4PSI3NSIgeT0iMTA1IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2QjcyODAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkltYWdlPC90ZXh0Pgo8L3N2Zz4=',
             };
             break;
             

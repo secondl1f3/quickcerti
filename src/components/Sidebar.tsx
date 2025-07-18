@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   MousePointer, 
   Hand, 
@@ -9,17 +9,11 @@ import {
   Minus,
   Database,
   Download,
-  Eye,
-  Save,
   Undo,
   Redo,
-  FileText,
-  Upload,
-  Settings,
   ArrowLeft
 } from 'lucide-react';
 import { Tool } from '../types';
-import { TemplateDebugPanel } from './TemplateDebugPanel';
 import { useTranslation } from '../i18n/i18nContext';
 
 interface SidebarProps {
@@ -27,8 +21,6 @@ interface SidebarProps {
   onToolChange: (tool: Tool) => void;
   onDataManager: () => void;
   onGenerate: () => void;
-  onTemplates: () => void;
-  onPreview: () => void;
   onBackToTemplateSelection: () => void;
   canUndo: boolean;
   canRedo: boolean;
@@ -43,15 +35,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToolChange,
   onDataManager,
   onGenerate,
-  onTemplates,
-  onPreview,
   onBackToTemplateSelection,
   canUndo,
   canRedo,
   onUndo,
   onRedo,
 }) => {
-  const [showDebugPanel, setShowDebugPanel] = useState(false);
   const { t } = useTranslation();
 
   const tools = [
@@ -126,33 +115,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* Spacer */}
-        <div className="flex-1"></div>
+        {/* Divider */}
+        <div className="border-t border-slate-700 mx-2 my-2"></div>
 
-        {/* Actions */}
+        {/* Data Management */}
         <div className="p-2 space-y-1">
-          <button
-            onClick={onBackToTemplateSelection}
-            className="w-12 h-12 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group relative"
-            title="Kembali ke Pilihan Template"
-          >
-            <ArrowLeft size={20} />
-            <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-              Kembali ke Pilihan Template
-            </span>
-          </button>
-
-          <button
-            onClick={onTemplates}
-            className="w-12 h-12 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group relative"
-            title={t('templatesUpload')}
-          >
-            <FileText size={20} />
-            <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-              {t('templatesUpload')}
-            </span>
-          </button>
-
           <button
             onClick={onDataManager}
             className="w-12 h-12 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group relative"
@@ -163,26 +130,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {t('dataManager')}
             </span>
           </button>
+        </div>
 
-          <button
-            onClick={onPreview}
-            className="w-12 h-12 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group relative"
-            title={t('preview')}
-          >
-            <Eye size={20} />
-            <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-              {t('preview')}
-            </span>
-          </button>
+        {/* Spacer */}
+        <div className="flex-1"></div>
 
+        {/* Actions */}
+        {/* <div className="p-2 space-y-1">
           <button
-            onClick={() => setShowDebugPanel(true)}
+            onClick={onBackToTemplateSelection}
             className="w-12 h-12 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group relative"
-            title={t('debugTemplates')}
+            title="Kembali ke Pilihan Template"
           >
-            <Settings size={20} />
+            <ArrowLeft size={20} />
             <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-              {t('debugTemplates')}
+              Kembali ke Pilihan Template
             </span>
           </button>
 
@@ -196,13 +158,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {t('generate')}
             </span>
           </button>
-        </div>
+        </div> */}
       </div>
 
-      {/* Debug Panel */}
-      {showDebugPanel && (
-        <TemplateDebugPanel onClose={() => setShowDebugPanel(false)} />
-      )}
+
     </>
   );
 };

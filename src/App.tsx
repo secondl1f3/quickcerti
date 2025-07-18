@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { Canvas } from './components/Canvas';
 import { PropertiesPanel } from './components/PropertiesPanel';
@@ -14,16 +15,43 @@ import { AuthWrapper } from './components/AuthWrapper';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { NavigationHeader, APP_NAVIGATION_STEPS } from './components/NavigationHeader';
 import { EditorHeader } from './components/EditorHeader';
+import { BuyPoints } from './components/BuyPoints';
+import { PaymentWaiting } from './components/PaymentWaiting';
+import { TransactionHistory } from './components/TransactionHistory';
 import { useDesignStore } from './store/designStore';
 import { useDataStore } from './store/dataStore';
 import { useAuthStore } from './store/authStore';
 import { DesignElement, Tool } from './types';
 import { I18nProvider } from './i18n/i18nContext';
+import { Profile } from './components/Profile';
+import { CertificateHub } from './components/CertificateHub';
+import { CertificateDesigner } from './components/CertificateDesigner';
 
-type AppView = 'auth' | 'landing' | 'template-selection' | 'editor';
+type AppView = 'auth' | 'landing' | 'template-selection' | 'editor' | 'profile' | 'certificate-hub';
 
-function App() {
-  const [currentView, setCurrentView] = useState<AppView>('landing');
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Derive current view from route
+  const getCurrentView = (): AppView => {
+    switch (location.pathname) {
+      case '/auth':
+        return 'auth';
+      case '/template-selection':
+        return 'template-selection';
+      case '/editor':
+        return 'editor';
+      case '/profile':
+        return 'profile';
+      case '/certificate-hub':
+        return 'certificate-hub';
+      default:
+        return 'landing';
+    }
+  };
+  
+  const currentView = getCurrentView();
   const { isAuthenticated, initializeAuth, signOut } = useAuthStore();
 
   // Initialize authentication on app start
@@ -34,11 +62,11 @@ function App() {
   // Handle authentication state changes
   useEffect(() => {
     if (isAuthenticated && currentView === 'auth') {
-      setCurrentView('landing');
+      navigate('/');
     }
     // Don't redirect unauthenticated users away from landing page
     // They can access landing page but need to login for other features
-  }, [isAuthenticated, currentView]);
+  }, [isAuthenticated, currentView, navigate]);
   const [showDataManager, setShowDataManager] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -113,11 +141,20 @@ function App() {
     // Allow unauthenticated users to access landing page
     // Prevent navigation to other protected views if not authenticated
     if (!isAuthenticated && view !== 'auth' && view !== 'landing') {
-      setCurrentView('auth');
+      navigate('/auth');
       return;
     }
     
-    setCurrentView(view);
+    const routeMap = {
+      'auth': '/auth',
+      'landing': '/',
+      'template-selection': '/template-selection',
+      'editor': '/editor',
+      'profile': '/profile',
+      'certificate-hub': '/certificate-hub'
+    };
+    
+    navigate(routeMap[view]);
     // Close any open modals when navigating
     setShowUploadTemplate(false);
     setShowDataManager(false);
@@ -129,7 +166,7 @@ function App() {
 
   const handleSignOut = () => {
     signOut();
-    setCurrentView('auth');
+    navigate('/auth');
     // Close any open modals
     setShowUploadTemplate(false);
     setShowDataManager(false);
@@ -140,16 +177,22 @@ function App() {
   };
 
   const handleAuthSuccess = () => {
-    setCurrentView('landing');
+    navigate('/');
   };
 
   const handleBackNavigation = () => {
     switch (currentView) {
       case 'editor':
-        setCurrentView('template-selection');
+        navigate('/certificate-hub');
+        break;
+      case 'certificate-hub':
+        navigate('/');
         break;
       case 'template-selection':
-        setCurrentView('landing');
+        navigate('/');
+        break;
+      case 'profile':
+        navigate('/');
         break;
       case 'landing':
         // Don't allow going back from landing if authenticated
@@ -183,9 +226,9 @@ function App() {
       <I18nProvider defaultLanguage="id">
         <LandingPage onGetStarted={() => {
           if (isAuthenticated) {
-            handleNavigateToView('template-selection');
+            handleNavigateToView('certificate-hub');
           } else {
-            setCurrentView('auth');
+            navigate('/auth');
           }
         }} />
       </I18nProvider>
@@ -195,14 +238,17 @@ function App() {
   if (currentView === 'template-selection') {
     return (
       <I18nProvider defaultLanguage="id">
-        <ProtectedRoute onRedirectToAuth={() => setCurrentView('auth')}>
+        <ProtectedRoute onRedirectToAuth={() => navigate('/auth')}>
           <div className="h-screen flex flex-col bg-gray-50">
             <NavigationHeader
               currentStep="template-selection"
               steps={getNavigationSteps()}
               onBack={handleBackNavigation}
               onHome={() => handleNavigateToView('landing')}
+              onProfile={() => handleNavigateToView('profile')}
               onSignOut={handleSignOut}
+              onBuyPoints={() => navigate('/buy-points')}
+              onTransactionHistory={() => navigate('/transaction-history')}
             />
             <div className="flex-1">
               <TemplateSelection 
@@ -265,76 +311,220 @@ function App() {
     );
   }
 
+  if (currentView === 'profile') {
+    return (
+      <I18nProvider defaultLanguage="id">
+        <ProtectedRoute onRedirectToAuth={() => navigate('/auth')}>
+          <div className="h-screen flex flex-col bg-gray-50">
+            <NavigationHeader
+               currentStep="profile"
+               steps={getNavigationSteps()}
+               onBack={handleBackNavigation}
+               onHome={() => handleNavigateToView('landing')}
+               onProfile={() => handleNavigateToView('profile')}
+               onSignOut={handleSignOut}
+               onBuyPoints={() => navigate('/buy-points')}
+               onTransactionHistory={() => navigate('/transaction-history')}
+             />
+            <div className="flex-1">
+              <Profile />
+            </div>
+          </div>
+        </ProtectedRoute>
+      </I18nProvider>
+    );
+  }
+
+  if (currentView === 'certificate-hub') {
+    return (
+      <I18nProvider defaultLanguage="id">
+        <ProtectedRoute onRedirectToAuth={() => navigate('/auth')}>
+          <div className="h-screen flex flex-col bg-gray-50">
+            <NavigationHeader
+              currentStep="certificate-hub"
+              steps={getNavigationSteps()}
+              onBack={handleBackNavigation}
+              onHome={() => handleNavigateToView('landing')}
+              onProfile={() => handleNavigateToView('profile')}
+              onSignOut={handleSignOut}
+              onBuyPoints={() => navigate('/buy-points')}
+              onTransactionHistory={() => navigate('/transaction-history')}
+            />
+            <div className="flex-1 overflow-auto">
+              <CertificateHub
+                onCreateBlank={() => {
+                  // Clear any existing elements and go to editor
+                  setElements([]);
+                  handleNavigateToView('editor');
+                }}
+                onUploadTemplate={() => {
+                  setShowUploadTemplate(true);
+                }}
+                onSelectTemplate={(template) => {
+                  // Create a background image element from the selected template
+                  const backgroundElement = {
+                    id: Date.now().toString(),
+                    type: 'image' as const,
+                    x: 0,
+                    y: 0,
+                    width: 800,
+                    height: 600,
+                    position: { x: 0, y: 0 },
+                    size: { width: 800, height: 600 },
+                    rotation: 0,
+                    opacity: 1,
+                    zIndex: 0,
+                    imageUrl: template.templateUrl,
+                    locked: true
+                  };
+                  
+                  setElements([backgroundElement]);
+                  handleNavigateToView('editor');
+                }}
+              />
+            </div>
+            
+            {/* Upload Template Modal */}
+            {showUploadTemplate && (
+              <UploadTemplate 
+                onClose={() => setShowUploadTemplate(false)}
+                onUploadSuccess={(imageUrl) => {
+                  // Create a background image element from the uploaded image
+                  const backgroundElement = {
+                    id: Date.now().toString(),
+                    type: 'image' as const,
+                    x: 0,
+                    y: 0,
+                    width: 800,
+                    height: 600,
+                    position: { x: 0, y: 0 },
+                    size: { width: 800, height: 600 },
+                    rotation: 0,
+                    opacity: 1,
+                    zIndex: 0,
+                    imageUrl: imageUrl,
+                    locked: true
+                  };
+                  
+                  setElements([backgroundElement]);
+                  setShowUploadTemplate(false);
+                  handleNavigateToView('editor');
+                }}
+              />
+            )}
+          </div>
+        </ProtectedRoute>
+      </I18nProvider>
+    );
+  }
+
   return (
     <I18nProvider defaultLanguage="id">
-      <ProtectedRoute onRedirectToAuth={() => setCurrentView('auth')}>
-        <div className="h-screen flex flex-col bg-gray-50">
-          <EditorHeader
-            onBack={() => handleNavigateToView('template-selection')}
-            onSave={() => console.log('Save project')}
-            onPreview={() => setShowPreviewModal(true)}
-            onExport={() => setShowExportModal(true)}
-            onUndo={() => undo()}
-            onRedo={() => redo()}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            projectName="Sertifikat Saya"
-            onSignOut={handleSignOut}
-          />
-        <div className="flex-1 flex bg-gray-100">
-          <Sidebar
-            activeTool={activeTool}
-            onToolChange={setActiveTool}
-            onDataManager={() => setShowDataManager(true)}
-            onGenerate={() => setShowGenerateModal(true)}
-            onTemplates={() => setShowTemplateModal(true)}
-            onPreview={() => setShowPreviewModal(true)}
-            onBackToTemplateSelection={() => handleNavigateToView('template-selection')}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            onUndo={undo}
-            onRedo={redo}
-          />
-          
-          <div className="flex-1 relative">
-            <Canvas
-              ref={canvasRef}
-              activeTool={activeTool}
-              elements={elements}
-              selectedElement={selectedElement}
-              onCanvasClick={handleCanvasClick}
-              onElementClick={handleElementClick}
-              onElementUpdate={updateElement}
-              onElementAdd={addElement}
-            />
-          </div>
-          
-          <PropertiesPanel
-            selectedElement={selectedElement}
-            onElementUpdate={updateElement}
-            variables={variables}
-          />
-        </div>
-
-        {/* Modals */}
-        {showDataManager && (
-          <DataManager onClose={() => setShowDataManager(false)} />
-        )}
-        
-        {showGenerateModal && (
-          <GenerateModal onClose={() => setShowGenerateModal(false)} />
-        )}
-        
-        {showPreviewModal && (
-          <PreviewModal onClose={() => setShowPreviewModal(false)} />
-        )}
-        
-        {showExportModal && (
-          <ExportModal onClose={() => setShowExportModal(false)} />
-        )}
-        </div>
+      <ProtectedRoute onRedirectToAuth={() => navigate('/auth')}>
+        <CertificateDesigner
+          elements={elements}
+          selectedElement={selectedElement}
+          onElementsChange={setElements}
+          onElementSelect={(elementId) => elementId ? selectElement(elementId) : clearSelection()}
+          onElementUpdate={updateElement}
+          onElementAdd={addElement}
+          onElementDelete={deleteElement}
+          onUndo={undo}
+          onRedo={redo}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onBack={() => handleNavigateToView('certificate-hub')}
+        />
       </ProtectedRoute>
     </I18nProvider>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <I18nProvider defaultLanguage="id">
+        <Routes>
+          <Route path="/" element={<AppContent />} />
+          <Route path="/auth" element={<AuthWrapper onAuthSuccess={() => window.location.href = '/'} />} />
+          <Route path="/landing" element={<AppContent />} />
+          <Route path="/template-selection" element={<AppContent />} />
+          <Route path="/certificate-hub" element={<AppContent />} />
+          <Route path="/editor" element={<AppContent />} />
+          <Route path="/profile" element={<AppContent />} />
+          <Route path="/buy-points" element={
+            <ProtectedRoute onRedirectToAuth={() => window.location.href = '/auth'}>
+              <div className="h-screen flex flex-col bg-gray-50">
+                <NavigationHeader
+                  currentStep="buy-points"
+                  steps={APP_NAVIGATION_STEPS}
+                  onBack={() => window.history.back()}
+                  onHome={() => window.location.href = '/'}
+                  onProfile={() => window.location.href = '/profile'}
+                  onSignOut={() => {
+                    // Clear auth and redirect
+                    localStorage.removeItem('auth-storage');
+                    window.location.href = '/auth';
+                  }}
+                  onBuyPoints={() => window.location.href = '/buy-points'}
+                  onTransactionHistory={() => window.location.href = '/transaction-history'}
+                />
+                <div className="flex-1">
+                  <BuyPoints />
+                </div>
+              </div>
+            </ProtectedRoute>
+          } />
+          <Route path="/payment-waiting/:transactionId" element={
+            <ProtectedRoute onRedirectToAuth={() => window.location.href = '/auth'}>
+              <div className="h-screen flex flex-col bg-gray-50">
+                <NavigationHeader
+                  currentStep="payment-waiting"
+                  steps={APP_NAVIGATION_STEPS}
+                  onBack={() => window.history.back()}
+                  onHome={() => window.location.href = '/'}
+                  onProfile={() => window.location.href = '/profile'}
+                  onSignOut={() => {
+                    // Clear auth and redirect
+                    localStorage.removeItem('auth-storage');
+                    window.location.href = '/auth';
+                  }}
+                  onBuyPoints={() => window.location.href = '/buy-points'}
+                  onTransactionHistory={() => window.location.href = '/transaction-history'}
+                />
+                <div className="flex-1">
+                  <PaymentWaiting />
+                </div>
+              </div>
+            </ProtectedRoute>
+          } />
+          <Route path="/transaction-history" element={
+            <ProtectedRoute onRedirectToAuth={() => window.location.href = '/auth'}>
+              <div className="h-screen flex flex-col bg-gray-50">
+                <NavigationHeader
+                  currentStep="transaction-history"
+                  steps={APP_NAVIGATION_STEPS}
+                  onBack={() => window.history.back()}
+                  onHome={() => window.location.href = '/'}
+                  onProfile={() => window.location.href = '/profile'}
+                  onSignOut={() => {
+                    // Clear auth and redirect
+                    localStorage.removeItem('auth-storage');
+                    window.location.href = '/auth';
+                  }}
+                  onBuyPoints={() => window.location.href = '/buy-points'}
+                  onTransactionHistory={() => window.location.href = '/transaction-history'}
+                />
+                <div className="flex-1">
+                  <TransactionHistory />
+                </div>
+              </div>
+            </ProtectedRoute>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </I18nProvider>
+    </Router>
   );
 }
 

@@ -71,9 +71,14 @@ export interface Template {
   id: string;
   name: string;
   thumbnail: string;
+  templateUrl?: string;
   elements: DesignElement[];
   variables: Variable[];
+  userId?: string;
+  isPublic?: boolean;
   createdAt: Date;
+  category?: string;
+  description?: string;
 }
 
 export interface GenerationOptions {

@@ -1,5 +1,6 @@
-import React from 'react';
-import { ArrowLeft, Home, FileText, Edit3, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Home, FileText, Edit3, LogOut, User, Coins, History, Bug } from 'lucide-react';
+import { AuthTest } from './AuthTest';
 
 interface NavigationStep {
   id: string;
@@ -13,6 +14,9 @@ interface NavigationHeaderProps {
   steps: NavigationStep[];
   onBack?: () => void;
   onHome?: () => void;
+  onProfile?: () => void;
+  onBuyPoints?: () => void;
+  onTransactionHistory?: () => void;
   onSignOut?: () => void;
   showBackButton?: boolean;
   showHomeButton?: boolean;
@@ -23,11 +27,18 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   steps,
   onBack,
   onHome,
+  onProfile,
+  onBuyPoints,
+  onTransactionHistory,
   onSignOut,
   showBackButton = true,
   showHomeButton = true,
 }) => {
   const currentStepIndex = steps.findIndex(step => step.id === currentStep);
+  const [showAuthTest, setShowAuthTest] = useState(false);
+  
+  // Only show debug button in development
+  const isDevelopment = import.meta.env.DEV;
 
   return (
     <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
@@ -74,15 +85,53 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         </nav>
       </div>
 
-      {/* Right side - Home button and Sign Out */}
+      {/* Right side - Action buttons */}
       <div className="flex items-center space-x-2">
         {showHomeButton && onHome && (
           <button
             onClick={onHome}
             className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Home"
           >
             <Home className="w-4 h-4" />
-            <span className="text-sm font-medium">Beranda</span>
+          </button>
+        )}
+        
+        {/* Debug button - only in development */}
+        {isDevelopment && (
+          <button
+            onClick={() => setShowAuthTest(true)}
+            className="flex items-center space-x-2 px-3 py-2 text-orange-600 hover:text-orange-900 hover:bg-orange-100 rounded-lg transition-colors"
+            title="Test API Authentication"
+          >
+            <Bug className="w-4 h-4" />
+          </button>
+        )}
+        {onProfile && (
+          <button
+            onClick={onProfile}
+            className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <User className="w-4 h-4" />
+            <span className="text-sm font-medium">Profil</span>
+          </button>
+        )}
+        {onBuyPoints && (
+          <button
+            onClick={onBuyPoints}
+            className="flex items-center space-x-2 px-3 py-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+          >
+            <Coins className="w-4 h-4" />
+            <span className="text-sm font-medium">Beli Poin</span>
+          </button>
+        )}
+        {onTransactionHistory && (
+          <button
+            onClick={onTransactionHistory}
+            className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <History className="w-4 h-4" />
+            <span className="text-sm font-medium">Riwayat Transaksi</span>
           </button>
         )}
         {onSignOut && (
@@ -95,6 +144,11 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
           </button>
         )}
       </div>
+      
+      {/* Auth Test Modal */}
+      {showAuthTest && (
+        <AuthTest onClose={() => setShowAuthTest(false)} />
+      )}
     </div>
   );
 };

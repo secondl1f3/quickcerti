@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, FileText, AlertCircle, CheckCircle, Image } from 'lucide-react';
+import { TemplateService } from '../services/templateService';
 
 interface UploadTemplateProps {
   onClose: () => void;
@@ -71,22 +72,33 @@ export const UploadTemplate: React.FC<UploadTemplateProps> = ({ onClose, onUploa
     }
 
     try {
-      // Create object URL for preview and use
+      // Create object URL for preview
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
       
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Upload template using the service
+      const template = await TemplateService.uploadTemplate(file, {
+        name: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
+        isPublic: false,
+      });
       
       setUploadStatus('success');
       
       setTimeout(() => {
-        onUploadSuccess(objectUrl);
+        // Use the final template URL from the service
+        onUploadSuccess(template.templateUrl || template.thumbnail);
         onClose();
+        // Clean up object URL
+        URL.revokeObjectURL(objectUrl);
       }, 1500);
     } catch (error) {
+      console.error('Template upload failed:', error);
       setUploadStatus('error');
-      setErrorMessage('Gagal memproses file template.');
+      setErrorMessage(
+        error instanceof Error 
+          ? error.message 
+          : 'Gagal mengupload template. Silakan coba lagi.'
+      );
     }
   };
 

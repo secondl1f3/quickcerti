@@ -7,6 +7,8 @@ export interface SignUpRequest {
   email: string;
   password: string;
   role: string[];
+  fullName: string;
+  phone?: string;
 }
 
 export interface SignInRequest {
@@ -15,7 +17,9 @@ export interface SignInRequest {
 }
 
 export interface AuthResponse {
+  accessToken: string;
   auth_token: string;
+  id: string;
   user_profile_id: string;
   username: string;
   email?: string;
@@ -87,18 +91,26 @@ class AuthService {
     return localStorage.getItem('user_profile_id');
   }
 
+  // Helper method to get stored user ID
+  getStoredUserId(): string | null {
+    return localStorage.getItem('user_id');
+  }
+
   // Helper method to clear stored auth data
   clearStoredAuth(): void {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_id');
     localStorage.removeItem('user_profile_id');
     localStorage.removeItem('user_data');
   }
 
   // Helper method to store auth data
   storeAuthData(authResponse: AuthResponse): void {
-    localStorage.setItem('auth_token', authResponse.auth_token);
+    localStorage.setItem('auth_token', authResponse.accessToken || authResponse.auth_token);
+    localStorage.setItem('user_id', authResponse.id);
     localStorage.setItem('user_profile_id', authResponse.user_profile_id);
     localStorage.setItem('user_data', JSON.stringify({
+      id: authResponse.id,
       username: authResponse.username,
       email: authResponse.email,
       roles: authResponse.roles,
