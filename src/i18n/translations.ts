@@ -177,6 +177,16 @@ export const translations = {
     warning: 'Warning',
     info: 'Info',
     loading: 'Loading...',
+    
+    // Canvas Instructions
+    clickToAddText: 'Click anywhere on the canvas to add text',
+    clickToAddRectangle: 'Click anywhere on the canvas to add a rectangle',
+    clickToAddCircle: 'Click anywhere on the canvas to add a circle',
+    clickToAddLine: 'Click anywhere on the canvas to add a line',
+    clickToAddImage: 'Click anywhere on the canvas to add an image',
+    clickToSelect: 'Click on elements to select them',
+    clickAndDragToPan: 'Click and drag to pan the canvas',
+    clickOnCanvasToAdd: 'Click on canvas to add',
   },
   
   id: {
@@ -355,6 +365,16 @@ export const translations = {
     warning: 'Peringatan',
     info: 'Info',
     loading: 'Memuat...',
+    
+    // Canvas Instructions
+    clickToAddText: 'Klik di mana saja pada kanvas untuk menambah teks',
+    clickToAddRectangle: 'Klik di mana saja pada kanvas untuk menambah persegi',
+    clickToAddCircle: 'Klik di mana saja pada kanvas untuk menambah lingkaran',
+    clickToAddLine: 'Klik di mana saja pada kanvas untuk menambah garis',
+    clickToAddImage: 'Klik di mana saja pada kanvas untuk menambah gambar',
+    clickToSelect: 'Klik pada elemen untuk memilihnya',
+    clickAndDragToPan: 'Klik dan seret untuk menggeser kanvas',
+    clickOnCanvasToAdd: 'Klik pada kanvas untuk menambah',
   }
 };
 

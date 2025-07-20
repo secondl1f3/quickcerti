@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef, forwardRef, useEffect } from 'rea
 import { DesignElement, Tool } from '../types';
 import { ElementRenderer } from './ElementRenderer';
 import { Grid } from './Grid';
+import { useTranslation } from '../i18n/i18nContext';
 
 interface CanvasProps {
   activeTool: Tool;
@@ -170,6 +171,29 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
     }
   }, [handleWheel]);
 
+  const { t } = useTranslation();
+
+  const getToolInstruction = () => {
+    switch (activeTool) {
+      case 'text':
+        return t('clickToAddText');
+      case 'rectangle':
+        return t('clickToAddRectangle');
+      case 'circle':
+        return t('clickToAddCircle');
+      case 'line':
+        return t('clickToAddLine');
+      case 'image':
+        return t('clickToAddImage');
+      case 'select':
+        return t('clickToSelect');
+      case 'pan':
+        return t('clickAndDragToPan');
+      default:
+        return '';
+    }
+  };
+
   return (
     <div className="flex-1 bg-gray-100 relative overflow-hidden">
       <div className="absolute top-4 left-4 z-10 bg-white rounded-lg shadow-md px-3 py-2">
@@ -185,6 +209,16 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
         </div>
       </div>
 
+      {/* Tool instruction overlay */}
+      {activeTool !== 'select' && activeTool !== 'pan' && (
+        <div className="absolute top-4 right-4 z-10 bg-blue-600 text-white rounded-lg shadow-md px-4 py-2 max-w-xs">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium">{getToolInstruction()}</span>
+          </div>
+        </div>
+      )}
+
       <div
         ref={canvasRef}
         className="w-full h-full cursor-crosshair"
@@ -198,7 +232,11 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
         }}
       >
         <div
-          className="relative bg-white shadow-lg"
+          className={`relative bg-white shadow-lg transition-all duration-200 ${
+            activeTool !== 'select' && activeTool !== 'pan' 
+              ? 'ring-2 ring-blue-300 ring-opacity-50' 
+              : ''
+          }`}
           style={{
             width: 800 * zoom,
             height: 600 * zoom,

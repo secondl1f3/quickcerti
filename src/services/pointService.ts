@@ -120,7 +120,7 @@ export const formatRupiah = (amount: number): string => {
 
 // Helper function to calculate total price (assuming 1 point = 1000 IDR)
 export const calculateTotalPrice = (points: number): number => {
-  const POINT_PRICE = 1000; // 1 point = 1000 IDR
+  const POINT_PRICE = 100; // 1 point = 100 IDR
   return points * POINT_PRICE;
 };
 

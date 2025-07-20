@@ -1,33 +1,45 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Sidebar } from './components/Sidebar';
-import { Canvas } from './components/Canvas';
-import { PropertiesPanel } from './components/PropertiesPanel';
-import { DataManager } from './components/DataManager';
-import { GenerateModal } from './components/GenerateModal';
-import { TemplateModal } from './components/TemplateModal';
-import { PreviewModal } from './components/PreviewModal';
-import { ExportModal } from './components/ExportModal';
 import { LandingPage } from './components/LandingPage';
-import { TemplateSelection } from './components/TemplateSelection';
-import { UploadTemplate } from './components/UploadTemplate';
 import { AuthWrapper } from './components/AuthWrapper';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { NavigationHeader, APP_NAVIGATION_STEPS } from './components/NavigationHeader';
-import { EditorHeader } from './components/EditorHeader';
-import { BuyPoints } from './components/BuyPoints';
-import { PaymentWaiting } from './components/PaymentWaiting';
-import { TransactionHistory } from './components/TransactionHistory';
+import { NavigationHeader } from './components/NavigationHeader';
 import { useDesignStore } from './store/designStore';
 import { useDataStore } from './store/dataStore';
 import { useAuthStore } from './store/authStore';
 import { DesignElement, Tool } from './types';
 import { I18nProvider } from './i18n/i18nContext';
-import { Profile } from './components/Profile';
-import { CertificateHub } from './components/CertificateHub';
-import { CertificateDesigner } from './components/CertificateDesigner';
+import { AdminProtectedRoute } from './components/AdminProtectedRoute';
+import { Footer } from './components/Footer';
 
-type AppView = 'auth' | 'landing' | 'template-selection' | 'editor' | 'profile' | 'certificate-hub';
+// Lazy load components that are not needed immediately
+const Sidebar = lazy(() => import('./components/Sidebar').then(module => ({ default: module.Sidebar })));
+const Canvas = lazy(() => import('./components/Canvas').then(module => ({ default: module.Canvas })));
+const PropertiesPanel = lazy(() => import('./components/PropertiesPanel').then(module => ({ default: module.PropertiesPanel })));
+const DataManager = lazy(() => import('./components/DataManager').then(module => ({ default: module.DataManager })));
+const GenerateModal = lazy(() => import('./components/GenerateModal').then(module => ({ default: module.GenerateModal })));
+const TemplateModal = lazy(() => import('./components/TemplateModal').then(module => ({ default: module.TemplateModal })));
+const PreviewModal = lazy(() => import('./components/PreviewModal').then(module => ({ default: module.PreviewModal })));
+const ExportModal = lazy(() => import('./components/ExportModal').then(module => ({ default: module.ExportModal })));
+const TemplateSelection = lazy(() => import('./components/TemplateSelection').then(module => ({ default: module.TemplateSelection })));
+const UploadTemplate = lazy(() => import('./components/UploadTemplate').then(module => ({ default: module.UploadTemplate })));
+const EditorHeader = lazy(() => import('./components/EditorHeader').then(module => ({ default: module.EditorHeader })));
+const BuyPoints = lazy(() => import('./components/BuyPoints').then(module => ({ default: module.BuyPoints })));
+const PaymentWaiting = lazy(() => import('./components/PaymentWaiting').then(module => ({ default: module.PaymentWaiting })));
+const TransactionHistory = lazy(() => import('./components/TransactionHistory').then(module => ({ default: module.TransactionHistory })));
+const Profile = lazy(() => import('./components/Profile').then(module => ({ default: module.Profile })));
+const CertificateHub = lazy(() => import('./components/CertificateHub').then(module => ({ default: module.CertificateHub })));
+const CertificateDesigner = lazy(() => import('./components/CertificateDesigner').then(module => ({ default: module.CertificateDesigner })));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+
+// Loading component for Suspense fallback
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+  </div>
+);
+
+type AppView = 'auth' | 'landing' | 'template-selection' | 'editor' | 'profile' | 'certificate-hub' | 'admin';
 
 function AppContent() {
   const navigate = useNavigate();
@@ -46,6 +58,8 @@ function AppContent() {
         return 'profile';
       case '/certificate-hub':
         return 'certificate-hub';
+      case '/admin':
+        return 'admin';
       default:
         return 'landing';
     }
@@ -75,11 +89,11 @@ function AppContent() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [activeTool, setActiveTool] = useState<Tool>('select');
   
-  const { 
-    selectedElement, 
-    elements, 
-    addElement, 
-    updateElement, 
+  const {
+    elements,
+    selectedElement,
+    addElement,
+    updateElement,
     deleteElement,
     selectElement,
     clearSelection,
@@ -89,8 +103,6 @@ function AppContent() {
     canRedo,
     setElements
   } = useDesignStore();
-  
-  const { data, variables } = useDataStore();
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -151,7 +163,8 @@ function AppContent() {
       'template-selection': '/template-selection',
       'editor': '/editor',
       'profile': '/profile',
-      'certificate-hub': '/certificate-hub'
+      'certificate-hub': '/certificate-hub',
+      'admin': '/admin'
     };
     
     navigate(routeMap[view]);
@@ -206,13 +219,6 @@ function AppContent() {
     }
   };
 
-  const getNavigationSteps = () => {
-    return APP_NAVIGATION_STEPS.map(step => ({
-      ...step,
-      onClick: step.id !== currentView ? () => handleNavigateToView(step.id as AppView) : undefined,
-    }));
-  };
-
   if (currentView === 'auth') {
     return (
       <I18nProvider defaultLanguage="id">
@@ -241,31 +247,33 @@ function AppContent() {
         <ProtectedRoute onRedirectToAuth={() => navigate('/auth')}>
           <div className="h-screen flex flex-col bg-gray-50">
             <NavigationHeader
-              currentStep="template-selection"
-              steps={getNavigationSteps()}
               onBack={handleBackNavigation}
               onHome={() => handleNavigateToView('landing')}
               onProfile={() => handleNavigateToView('profile')}
               onSignOut={handleSignOut}
               onBuyPoints={() => navigate('/buy-points')}
               onTransactionHistory={() => navigate('/transaction-history')}
+              onAdmin={() => navigate('/admin')}
             />
-            <div className="flex-1">
-              <TemplateSelection 
-              onCreateNew={() => {
-                console.log('Create New clicked');
-                handleNavigateToView('editor');
-              }}
-              onUseTemplate={() => {
-                console.log('Use Template clicked');
-                setShowTemplateModal(true);
-              }}
-              onUploadTemplate={() => {
-                console.log('Upload Template clicked');
-                setShowUploadTemplate(true);
-              }}
-            />
-          </div>
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1">
+                <TemplateSelection 
+                onCreateNew={() => {
+                  console.log('Create New clicked');
+                  handleNavigateToView('editor');
+                }}
+                onUseTemplate={() => {
+                  console.log('Use Template clicked');
+                  setShowTemplateModal(true);
+                }}
+                onUploadTemplate={() => {
+                  console.log('Upload Template clicked');
+                  setShowUploadTemplate(true);
+                }}
+              />
+              </div>
+              <Footer />
+            </div>
           
           {/* Modals for template-selection view */}
           {showTemplateModal && (
@@ -317,17 +325,19 @@ function AppContent() {
         <ProtectedRoute onRedirectToAuth={() => navigate('/auth')}>
           <div className="h-screen flex flex-col bg-gray-50">
             <NavigationHeader
-               currentStep="profile"
-               steps={getNavigationSteps()}
                onBack={handleBackNavigation}
                onHome={() => handleNavigateToView('landing')}
                onProfile={() => handleNavigateToView('profile')}
                onSignOut={handleSignOut}
                onBuyPoints={() => navigate('/buy-points')}
                onTransactionHistory={() => navigate('/transaction-history')}
+               onAdmin={() => navigate('/admin')}
              />
-            <div className="flex-1">
-              <Profile />
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1">
+                <Profile />
+              </div>
+              <Footer />
             </div>
           </div>
         </ProtectedRoute>
@@ -341,47 +351,49 @@ function AppContent() {
         <ProtectedRoute onRedirectToAuth={() => navigate('/auth')}>
           <div className="h-screen flex flex-col bg-gray-50">
             <NavigationHeader
-              currentStep="certificate-hub"
-              steps={getNavigationSteps()}
               onBack={handleBackNavigation}
               onHome={() => handleNavigateToView('landing')}
               onProfile={() => handleNavigateToView('profile')}
               onSignOut={handleSignOut}
               onBuyPoints={() => navigate('/buy-points')}
               onTransactionHistory={() => navigate('/transaction-history')}
+              onAdmin={() => navigate('/admin')}
             />
-            <div className="flex-1 overflow-auto">
-              <CertificateHub
-                onCreateBlank={() => {
-                  // Clear any existing elements and go to editor
-                  setElements([]);
-                  handleNavigateToView('editor');
-                }}
-                onUploadTemplate={() => {
-                  setShowUploadTemplate(true);
-                }}
-                onSelectTemplate={(template) => {
-                  // Create a background image element from the selected template
-                  const backgroundElement = {
-                    id: Date.now().toString(),
-                    type: 'image' as const,
-                    x: 0,
-                    y: 0,
-                    width: 800,
-                    height: 600,
-                    position: { x: 0, y: 0 },
-                    size: { width: 800, height: 600 },
-                    rotation: 0,
-                    opacity: 1,
-                    zIndex: 0,
-                    imageUrl: template.templateUrl,
-                    locked: true
-                  };
-                  
-                  setElements([backgroundElement]);
-                  handleNavigateToView('editor');
-                }}
-              />
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1 overflow-auto">
+                <CertificateHub
+                  onCreateBlank={() => {
+                    // Clear any existing elements and go to editor
+                    setElements([]);
+                    handleNavigateToView('editor');
+                  }}
+                  onUploadTemplate={() => {
+                    setShowUploadTemplate(true);
+                  }}
+                  onSelectTemplate={(template) => {
+                    // Create a background image element from the selected template
+                    const backgroundElement = {
+                      id: Date.now().toString(),
+                      type: 'image' as const,
+                      x: 0,
+                      y: 0,
+                      width: 800,
+                      height: 600,
+                      position: { x: 0, y: 0 },
+                      size: { width: 800, height: 600 },
+                      rotation: 0,
+                      opacity: 1,
+                      zIndex: 0,
+                      imageUrl: template.templateUrl,
+                      locked: true
+                    };
+                    
+                    setElements([backgroundElement]);
+                    handleNavigateToView('editor');
+                  }}
+                />
+              </div>
+              <Footer />
             </div>
             
             {/* Upload Template Modal */}
@@ -445,19 +457,41 @@ function App() {
     <Router>
       <I18nProvider defaultLanguage="id">
         <Routes>
-          <Route path="/" element={<AppContent />} />
+          <Route path="/" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <AppContent />
+            </Suspense>
+          } />
           <Route path="/auth" element={<AuthWrapper onAuthSuccess={() => window.location.href = '/'} />} />
-          <Route path="/landing" element={<AppContent />} />
-          <Route path="/template-selection" element={<AppContent />} />
-          <Route path="/certificate-hub" element={<AppContent />} />
-          <Route path="/editor" element={<AppContent />} />
-          <Route path="/profile" element={<AppContent />} />
+          <Route path="/landing" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <AppContent />
+            </Suspense>
+          } />
+          <Route path="/template-selection" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <AppContent />
+            </Suspense>
+          } />
+          <Route path="/certificate-hub" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <AppContent />
+            </Suspense>
+          } />
+          <Route path="/editor" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <AppContent />
+            </Suspense>
+          } />
+          <Route path="/profile" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <AppContent />
+            </Suspense>
+          } />
           <Route path="/buy-points" element={
             <ProtectedRoute onRedirectToAuth={() => window.location.href = '/auth'}>
               <div className="h-screen flex flex-col bg-gray-50">
                 <NavigationHeader
-                  currentStep="buy-points"
-                  steps={APP_NAVIGATION_STEPS}
                   onBack={() => window.history.back()}
                   onHome={() => window.location.href = '/'}
                   onProfile={() => window.location.href = '/profile'}
@@ -468,9 +502,15 @@ function App() {
                   }}
                   onBuyPoints={() => window.location.href = '/buy-points'}
                   onTransactionHistory={() => window.location.href = '/transaction-history'}
+                  onAdmin={() => window.location.href = '/admin'}
                 />
-                <div className="flex-1">
-                  <BuyPoints />
+                <div className="flex-1 flex flex-col">
+                  <div className="flex-1">
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <BuyPoints />
+                    </Suspense>
+                  </div>
+                  <Footer />
                 </div>
               </div>
             </ProtectedRoute>
@@ -479,8 +519,6 @@ function App() {
             <ProtectedRoute onRedirectToAuth={() => window.location.href = '/auth'}>
               <div className="h-screen flex flex-col bg-gray-50">
                 <NavigationHeader
-                  currentStep="payment-waiting"
-                  steps={APP_NAVIGATION_STEPS}
                   onBack={() => window.history.back()}
                   onHome={() => window.location.href = '/'}
                   onProfile={() => window.location.href = '/profile'}
@@ -491,9 +529,15 @@ function App() {
                   }}
                   onBuyPoints={() => window.location.href = '/buy-points'}
                   onTransactionHistory={() => window.location.href = '/transaction-history'}
+                  onAdmin={() => window.location.href = '/admin'}
                 />
-                <div className="flex-1">
-                  <PaymentWaiting />
+                <div className="flex-1 flex flex-col">
+                  <div className="flex-1">
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <PaymentWaiting />
+                    </Suspense>
+                  </div>
+                  <Footer />
                 </div>
               </div>
             </ProtectedRoute>
@@ -502,8 +546,6 @@ function App() {
             <ProtectedRoute onRedirectToAuth={() => window.location.href = '/auth'}>
               <div className="h-screen flex flex-col bg-gray-50">
                 <NavigationHeader
-                  currentStep="transaction-history"
-                  steps={APP_NAVIGATION_STEPS}
                   onBack={() => window.history.back()}
                   onHome={() => window.location.href = '/'}
                   onProfile={() => window.location.href = '/profile'}
@@ -514,12 +556,30 @@ function App() {
                   }}
                   onBuyPoints={() => window.location.href = '/buy-points'}
                   onTransactionHistory={() => window.location.href = '/transaction-history'}
+                  onAdmin={() => window.location.href = '/admin'}
                 />
-                <div className="flex-1">
-                  <TransactionHistory />
+                <div className="flex-1 flex flex-col">
+                  <div className="flex-1">
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <TransactionHistory />
+                    </Suspense>
+                  </div>
+                  <Footer />
                 </div>
               </div>
             </ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <AdminProtectedRoute onRedirectToAuth={() => window.location.href = '/auth'}>
+              <div className="min-h-screen flex flex-col">
+                <div className="flex-1">
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <AdminDashboard />
+                  </Suspense>
+                </div>
+                <Footer />
+              </div>
+            </AdminProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

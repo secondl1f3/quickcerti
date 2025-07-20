@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Download, FileImage, FileText, Printer, Settings } from 'lucide-react';
 import { useDesignStore } from '../store/designStore';
-import { useDataStore } from '../store/dataStore';
+import { useDatasetStore } from '../store/datasetStore';
 
 interface ExportModalProps {
   onClose: () => void;
@@ -21,7 +21,7 @@ interface ExportSettings {
 
 export const ExportModal: React.FC<ExportModalProps> = ({ onClose }) => {
   const { elements } = useDesignStore();
-  const { variables } = useDataStore();
+  const { variables } = useDatasetStore();
   
   const [settings, setSettings] = useState<ExportSettings>({
     format: 'png',

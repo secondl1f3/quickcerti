@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Upload, FileText, Zap, Users, Award, GraduationCap, Search, Filter } from 'lucide-react';
 import { Template } from '../types';
 import { TemplateService } from '../services/templateService';
@@ -145,9 +145,17 @@ export const CertificateHub: React.FC<CertificateHubProps> = ({
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const fetchingRef = useRef(false);
 
   useEffect(() => {
     const fetchTemplates = async () => {
+      // Prevent duplicate calls
+      if (fetchingRef.current) {
+        return;
+      }
+      
+      fetchingRef.current = true;
+      
       try {
         setLoading(true);
         setError(null);
@@ -167,6 +175,7 @@ export const CertificateHub: React.FC<CertificateHubProps> = ({
         setTemplates([]);
       } finally {
         setLoading(false);
+        fetchingRef.current = false;
       }
     };
 

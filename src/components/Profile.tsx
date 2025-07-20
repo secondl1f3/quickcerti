@@ -116,71 +116,52 @@ export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-100 font-sans">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-              {onClose && (
-                <button
-                  onClick={onClose}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  ×
-                </button>
-              )}
-            </div>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Account Settings</h1>
+            <p className="text-gray-500 mt-1">Manage your profile, and preferences.</p>
           </div>
-
-          {/* Success Message */}
-          {showSuccess && (
-            <div className="px-6 py-4 bg-green-50 border-b border-green-200">
-              <div className="flex items-center space-x-2 text-green-800">
-                <CheckCircle className="w-5 h-5" />
-                <span>Profile updated successfully!</span>
-              </div>
-            </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              ×
+            </button>
           )}
+        </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="px-6 py-4 bg-red-50 border-b border-red-200">
-              <div className="flex items-center space-x-2 text-red-800">
-                <AlertCircle className="w-5 h-5" />
-                <span>{error}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Profile Content */}
-          <div className="px-6 py-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Avatar Section */}
-              <div className="flex items-center space-x-6">
-                <div className="relative">
+        {/* Main Content */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            {/* Left Panel: Avatar and Info */}
+            <div className="md:col-span-1 p-8 bg-gray-50 border-r border-gray-200">
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-4">
                   <div 
-                    className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors"
+                    className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center ring-4 ring-white shadow-md transition-transform transform hover:scale-105"
                     onClick={isEditing ? handleAvatarClick : undefined}
                   >
                     {formData.avatarUrl ? (
                       <img 
                         src={formData.avatarUrl} 
-                        alt="Profile" 
-                        className="w-24 h-24 rounded-full object-cover"
+                        alt="Profile"
+                        className="w-32 h-32 rounded-full object-cover"
                       />
                     ) : (
-                      <User className="w-12 h-12 text-gray-400" />
+                      <User className="w-16 h-16 text-gray-400" />
                     )}
                   </div>
                   {isEditing && (
                     <button
                       type="button"
                       onClick={handleAvatarClick}
-                      className="absolute bottom-0 right-0 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-2 transition-colors"
+                      className="absolute bottom-1 right-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-3 shadow-md transition-colors"
                     >
-                      <Camera className="w-4 h-4" />
+                      <Camera className="w-5 h-5" />
                     </button>
                   )}
                   <input
@@ -191,160 +172,149 @@ export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
                     className="hidden"
                   />
                 </div>
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {profile?.fullName || 'User Name'}
-                  </h3>
-                  <p className="text-gray-600">{profile?.email}</p>
-                  {profile && (
-                    <p className="text-sm text-emerald-600 font-medium">
-                      Points Balance: {profile.pointsBalance}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Form Fields */}
-              <div className="grid grid-cols-1 gap-6">
-                {/* Full Name */}
-                <div>
-                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="text"
-                      id="fullName"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors ${
-                        isEditing 
-                          ? 'border-gray-300 bg-white' 
-                          : 'border-gray-200 bg-gray-50 cursor-not-allowed'
-                      }`}
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors ${
-                        isEditing 
-                          ? 'border-gray-300 bg-white' 
-                          : 'border-gray-200 bg-gray-50 cursor-not-allowed'
-                      }`}
-                      placeholder="Enter your email address"
-                    />
-                  </div>
-                </div>
-
-                {/* Phone */}
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors ${
-                        isEditing 
-                          ? 'border-gray-300 bg-white' 
-                          : 'border-gray-200 bg-gray-50 cursor-not-allowed'
-                      }`}
-                      placeholder="Enter your phone number"
-                    />
-                  </div>
-                </div>
-
-                {/* Points Information (Read-only) */}
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  {profile?.fullName || 'User Name'}
+                </h2>
+                <p className="text-gray-500 mt-1">{profile?.email}</p>
                 {profile && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">Points Summary</h4>
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div>
-                        <p className="text-2xl font-bold text-emerald-600">{profile.pointsBalance}</p>
-                        <p className="text-xs text-gray-600">Current Balance</p>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-blue-600">{profile.totalPointsPurchased}</p>
-                        <p className="text-xs text-gray-600">Total Purchased</p>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-orange-600">{profile.totalPointsUsed}</p>
-                        <p className="text-xs text-gray-600">Total Used</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-center">
-                      <button
-                        onClick={() => navigate('/transaction-history')}
-                        className="text-emerald-600 hover:text-emerald-700 text-sm font-medium flex items-center justify-center space-x-1 mx-auto transition-colors"
-                      >
-                        <History className="w-4 h-4" />
-                        <span>View Transaction History</span>
-                      </button>
-                    </div>
+                  <div className="mt-4 bg-emerald-100 text-emerald-800 font-bold py-2 px-4 rounded-full text-sm">
+                    Points Balance: {profile.pointsBalance}
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                {!isEditing ? (
+            {/* Right Panel: Form */}
+            <div className="md:col-span-2 p-8">
+              {/* Success Message */}
+              {showSuccess && (
+                <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-400 rounded-r-lg">
+                  <div className="flex items-center space-x-3 text-green-800">
+                    <CheckCircle className="w-6 h-6" />
+                    <span className="font-medium">Profile updated successfully!</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg">
+                  <div className="flex items-center space-x-3 text-red-800">
+                    <AlertCircle className="w-6 h-6" />
+                    <span className="font-medium">{error}</span>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Form Fields */}
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        name="fullName"
+                        id="fullName"
+                        value={formData.fullName}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        placeholder="Your full name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="email"
+                        name="email"
+                        id="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        placeholder="your.email@example.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <Phone className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="tel"
+                        name="phone"
+                        id="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        placeholder="(123) 456-7890"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-gray-200 mt-8">
+                  <div className="flex items-center space-x-4 mb-4 sm:mb-0">
+                    {!isEditing ? (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(true)}
+                        className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 transform hover:scale-105"
+                      >
+                        <Edit3 className="-ml-1 mr-2 h-5 w-5" />
+                        Edit Profile
+                      </button>
+                    ) : (
+                      <div className="flex items-center space-x-4">
+                        <button
+                          type="submit"
+                          disabled={isUpdating}
+                          className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:bg-emerald-400 disabled:cursor-wait transition-all duration-300"
+                        >
+                          {isUpdating ? (
+                            <Loader2 className="-ml-1 mr-2 h-5 w-5 animate-spin" />
+                          ) : (
+                            <Save className="-ml-1 mr-2 h-5 w-5" />
+                          )}
+                          Save Changes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancel}
+                          className="inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 text-sm font-bold rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-all duration-300"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() => setIsEditing(true)}
-                    className="flex items-center space-x-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                    onClick={() => navigate('/transaction-history')}
+                    className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 text-sm font-bold rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-all duration-300"
                   >
-                    <Edit3 className="w-4 h-4" />
-                    <span>Edit Profile</span>
+                    <History className="-ml-1 mr-2 h-5 w-5" />
+                    Transaction History
                   </button>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleCancel}
-                      className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isUpdating}
-                      className="flex items-center space-x-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-lg transition-colors"
-                    >
-                      {isUpdating ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Save className="w-4 h-4" />
-                      )}
-                      <span>{isUpdating ? 'Saving...' : 'Save Changes'}</span>
-                    </button>
-                  </>
-                )}
-              </div>
-            </form>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>

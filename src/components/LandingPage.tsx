@@ -1,333 +1,230 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
+import { FaqItem } from './FaqItem';
 import { ArrowRight, CheckCircle, Zap, Users, Download, Palette, FileText, Star } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
 
 interface LandingPageProps {
   onGetStarted: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
+// Memoized star rating component for better performance
+const StarRating = memo(() => {
+  const stars = useMemo(() => 
+    Array.from({ length: 5 }, (_, i) => (
+      <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+    )), []
+  );
+  return <div className="flex items-center mb-4">{stars}</div>;
+});
+
+StarRating.displayName = 'StarRating';
+
+export const LandingPage: React.FC<LandingPageProps> = memo(({ onGetStarted }) => {
+  const { isAuthenticated } = useAuthStore();
+  const buttonText = isAuthenticated ? 'Buka Dasbor' : 'Mulai Gratis';
+
+  const features = [
+    {
+      icon: Palette,
+      title: 'Editor Seret & Lepas yang Intuitif',
+      description: 'Rancang sertifikat dengan mudah menggunakan editor visual kami yang ramah pengguna. Tambahkan teks, gambar, dan elemen desain dengan fungsionalitas seret dan lepas yang sederhana.',
+    },
+    {
+      icon: Users,
+      title: 'Pembuatan Massal yang Efisien',
+      description: 'Buat ratusan sertifikat sekaligus menggunakan data dari file CSV. Hemat waktu dan tenaga untuk acara besar dan program pelatihan.',
+    },
+    {
+      icon: Download,
+      title: 'Ekspor Multi-Format',
+      description: 'Unduh sertifikat dalam format PDF, PNG, atau JPG berkualitas tinggi untuk memenuhi kebutuhan distribusi dan pencetakan Anda.',
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50">
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-gray-800">CertifikatKu</span>
-            </div>
-            <nav className="hidden md:flex space-x-8">
-              <a href="#fitur" className="text-gray-600 hover:text-teal-600 transition-colors">Fitur</a>
-              <a href="#harga" className="text-gray-600 hover:text-teal-600 transition-colors">Harga</a>
-              <a href="#testimoni" className="text-gray-600 hover:text-teal-600 transition-colors">Testimoni</a>
-            </nav>
-            <button
-              onClick={onGetStarted}
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 font-medium"
-            >
-              Mulai Gratis
-            </button>
+      <header className="bg-white/90 backdrop-blur-lg fixed top-0 left-0 right-0 z-50 shadow-sm">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <img src="/src/assets/logo.svg" alt="sertiku.id logo" className="h-8" />
           </div>
+          <nav className="hidden md:flex items-center gap-8 text-lg">
+            <a href="#features" className="text-gray-600 hover:text-emerald-600 transition-colors duration-300">Fitur</a>
+            <a href="#pricing" className="text-gray-600 hover:text-emerald-600 transition-colors duration-300">Harga</a>
+            <a href="#faq" className="text-gray-600 hover:text-emerald-600 transition-colors duration-300">FAQ</a>
+          </nav>
+          <button
+            onClick={onGetStarted}
+            className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-full hover:scale-105 transform transition-all duration-300 font-semibold shadow-lg hover:shadow-xl"
+          >
+            {buttonText}
+          </button>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Buat Sertifikat
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">
-                Profesional
-              </span>
+      <main className="pt-32 pb-20">
+        <section className="text-center container mx-auto px-6">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 leading-tight">
+            Buat Sertifikat Menakjubkan
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">
               dalam Hitungan Menit
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Platform desain sertifikat yang mudah digunakan dengan template profesional, 
-              editor drag-and-drop, dan fitur batch generation untuk kebutuhan organisasi Anda.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <button
-                onClick={onGetStarted}
-                className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 font-semibold text-lg flex items-center space-x-2 shadow-lg hover:shadow-xl"
-              >
-                <span>Mulai Membuat Sertifikat</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              <div className="flex items-center space-x-2 text-gray-600">
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
-                <span>Gratis untuk 10 sertifikat pertama</span>
-              </div>
+            </span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
+            Platform terbaik untuk merancang sertifikat profesional dengan fitur canggih seperti editor seret dan lepas serta pembuatan massal.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <button
+              onClick={onGetStarted}
+              className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-10 py-4 rounded-full hover:scale-105 transform transition-all duration-300 font-bold text-xl shadow-2xl flex items-center gap-3"
+            >
+              <span>{isAuthenticated ? 'Open Dashboard' : 'Mulai Membuat Sekarang'}</span>
+              <ArrowRight className="w-6 h-6" />
+            </button>
+            <div className="flex items-center gap-3 text-gray-600 font-medium">
+              <CheckCircle className="w-6 h-6 text-emerald-500" />
+              <span>Gratis untuk 100 sertifikat pertama Anda</span>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       {/* Features Section */}
-      <section id="fitur" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="features" className="py-24 bg-white">
+        <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Fitur Lengkap untuk Semua Kebutuhan
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Dari template profesional hingga batch generation, semua yang Anda butuhkan ada di sini.
-            </p>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Semua yang Anda Butuhkan, Semua di Satu Tempat</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Dari template profesional hingga pembuatan massal, kami siap membantu Anda.</p>
           </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-2xl border border-emerald-100">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl flex items-center justify-center mb-6">
-                <Palette className="w-6 h-6 text-white" />
+          <div className="grid md:grid-cols-3 gap-10">
+            {features.map((feature, index) => (
+              <div key={index} className="bg-gray-50 p-8 rounded-2xl border border-gray-200/80 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                  <feature.icon className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Editor Drag & Drop</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Desain sertifikat dengan mudah menggunakan editor visual yang intuitif. 
-                Tambahkan teks, gambar, dan elemen desain hanya dengan drag and drop.
-              </p>
-            </div>
-            
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-2xl border border-emerald-100">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl flex items-center justify-center mb-6">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Batch Generation</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Buat ratusan sertifikat sekaligus dengan data dari CSV. 
-                Hemat waktu dan tenaga untuk acara besar atau pelatihan massal.
-              </p>
-            </div>
-            
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-2xl border border-emerald-100">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl flex items-center justify-center mb-6">
-                <Download className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Export Multi-Format</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Download sertifikat dalam format PDF berkualitas tinggi atau PNG/JPG 
-                untuk berbagai kebutuhan distribusi dan pencetakan.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Mengapa Memilih CertifikatKu?
-              </h2>
-              <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Template Profesional</h3>
-                    <p className="text-gray-600">Koleksi template yang dirancang khusus untuk berbagai jenis acara dan organisasi.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4">
-                  <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Mudah Digunakan</h3>
-                    <p className="text-gray-600">Interface yang intuitif memungkinkan siapa saja membuat sertifikat tanpa skill desain.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4">
-                  <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Hemat Waktu & Biaya</h3>
-                    <p className="text-gray-600">Tidak perlu menyewa desainer atau menggunakan software mahal yang rumit.</p>
-                  </div>
-                </div>
-              </div>
+      {/* Pricing Section */}
+      <section id="pricing" className="py-24 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Harga Fleksibel Sesuai Kebutuhan Anda</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Tanpa langganan, tanpa biaya tersembunyi. Bayar hanya untuk apa yang Anda gunakan.</p>
+          </div>
+          <div className="max-w-2xl mx-auto bg-white p-10 rounded-3xl shadow-2xl border border-gray-200/80">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-gray-600 mb-2">Pay As You Go</h3>
+              <p className="text-6xl font-extrabold text-gray-900 mb-4">Rp 100<span className="text-2xl font-medium text-gray-500">/sertifikat</span></p>
+              <p className="text-gray-600 mb-8">Model harga kami sederhana: 1 sertifikat yang diterbitkan membutuhkan 1 poin. Dan 1 poin hanya seharga Rp 100.</p>
             </div>
-            
-            <div className="bg-white p-8 rounded-2xl shadow-xl">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Zap className="w-8 h-8 text-white" />
+            <ul className="space-y-4 mb-10">
+              <li className="flex items-center gap-4">
+                <CheckCircle className="w-7 h-7 text-emerald-500 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-lg text-gray-800">Semua Fitur Editor</h4>
+                  <p className="text-gray-600">Akses penuh ke editor seret & lepas, template, dan semua alat desain.</p>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Mulai dalam 30 Detik</h3>
-                <p className="text-gray-600 mb-6">
-                  Daftar sekarang dan langsung buat sertifikat pertama Anda. 
-                  Tidak perlu kartu kredit untuk memulai.
-                </p>
-                <button
-                  onClick={onGetStarted}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-3 rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 font-semibold"
-                >
-                  Coba Gratis Sekarang
-                </button>
-              </div>
-            </div>
+              </li>
+              <li className="flex items-center gap-4">
+                <CheckCircle className="w-7 h-7 text-emerald-500 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-lg text-gray-800">Pembuatan Massal</h4>
+                  <p className="text-gray-600">Buat ratusan sertifikat sekaligus dari data file CSV Anda.</p>
+                </div>
+              </li>
+              <li className="flex items-center gap-4">
+                <CheckCircle className="w-7 h-7 text-emerald-500 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-lg text-gray-800">Pengiriman Email Gratis</h4>
+                  <p className="text-gray-600">Kirim sertifikat langsung ke email penerima tanpa biaya tambahan.</p>
+                </div>
+              </li>
+            </ul>
+            <button
+              onClick={onGetStarted}
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-10 py-4 rounded-full hover:scale-105 transform transition-all duration-300 font-bold text-xl shadow-lg"
+            >
+              Mulai Sekarang
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section id="testimoni" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* FAQ Section */}
+      <section id="faq" className="py-24 bg-white">
+        <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Dipercaya oleh Ribuan Organisasi
-            </h2>
-            <p className="text-xl text-gray-600">
-              Lihat apa kata mereka tentang CertifikatKu
-            </p>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Pertanyaan yang Sering Diajukan</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Punya pertanyaan? Kami punya jawabannya.</p>
           </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100">
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4">
-                "CertifikatKu sangat membantu kami dalam membuat sertifikat untuk 500+ peserta workshop. 
-                Prosesnya cepat dan hasilnya profesional!"
-              </p>
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold">
-                  A
-                </div>
-                <div className="ml-3">
-                  <p className="font-semibold text-gray-900">Ahmad Rizki</p>
-                  <p className="text-sm text-gray-600">Event Manager, TechCorp</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100">
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4">
-                "Interface yang sangat mudah digunakan. Bahkan tanpa background desain, 
-                saya bisa membuat sertifikat yang terlihat profesional."
-              </p>
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold">
-                  S
-                </div>
-                <div className="ml-3">
-                  <p className="font-semibold text-gray-900">Sari Indah</p>
-                  <p className="text-sm text-gray-600">HR Manager, EduCenter</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100">
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4">
-                "Fitur batch generation sangat menghemat waktu kami. 
-                Yang tadinya butuh berhari-hari, sekarang selesai dalam hitungan jam."
-              </p>
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold">
-                  B
-                </div>
-                <div className="ml-3">
-                  <p className="font-semibold text-gray-900">Budi Santoso</p>
-                  <p className="text-sm text-gray-600">Training Coordinator</p>
-                </div>
-              </div>
+          <div className="max-w-4xl mx-auto">
+            <div className="space-y-4">
+              {
+                [
+                  {
+                    question: "Apa itu sertiku.id?",
+                    answer: "sertiku.id adalah platform online yang memudahkan Anda untuk membuat, mengelola, dan mendistribusikan sertifikat digital secara efisien."
+                  },
+                  {
+                    question: "Siapa yang bisa menggunakan platform ini?",
+                    answer: "Platform ini cocok untuk penyelenggara acara, lembaga pelatihan, sekolah, universitas, dan siapa saja yang perlu membuat sertifikat dalam jumlah besar maupun satuan."
+                  },
+                  {
+                    question: "Apakah saya perlu keahlian desain?",
+                    answer: "Tidak sama sekali. Kami menyediakan editor seret dan lepas yang intuitif serta berbagai template profesional yang siap Anda gunakan."
+                  },
+                  {
+                    question: "Mengapa pembuatan massal menjadi fitur utama?",
+                    answer: "Inti dari platform kami adalah efisiensi. Membuat sertifikat satu per satu sangat memakan waktu. Dengan fitur pembuatan massal, Anda bisa menghasilkan ratusan sertifikat hanya dengan mengunggah satu file data, menghemat waktu dan tenaga Anda secara signifikan."
+                  },
+                  {
+                    question: "Bagaimana cara kerja pembuatan massal?",
+                    answer: "Anda cukup menyiapkan data penerima sertifikat dalam format file CSV, unggah ke platform kami, dan sertiku.id akan secara otomatis menghasilkan semua sertifikat untuk Anda dalam sekejap."
+                  }
+                ].map((faq, index) => (
+                  <FaqItem key={index} question={faq.question} answer={faq.answer} />
+                ))
+              }
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-emerald-500 to-teal-600">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-white mb-6">
-            Siap Membuat Sertifikat Profesional?
-          </h2>
-          <p className="text-xl text-emerald-100 mb-8">
-            Bergabung dengan ribuan organisasi yang sudah mempercayai CertifikatKu 
-            untuk kebutuhan sertifikat mereka.
-          </p>
-          <button
-            onClick={onGetStarted}
-            className="bg-white text-teal-600 px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold text-lg flex items-center space-x-2 mx-auto shadow-lg hover:shadow-xl"
-          >
-            <span>Mulai Gratis Sekarang</span>
-            <ArrowRight className="w-5 h-5" />
-          </button>
-          <p className="text-emerald-100 mt-4 text-sm">
-            Tidak perlu kartu kredit • 10 sertifikat gratis • Setup dalam 30 detik
-          </p>
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-12 text-center shadow-2xl overflow-hidden relative">
+            <div className="absolute -top-10 -left-10 w-32 h-32 bg-white/10 rounded-full"></div>
+            <div className="absolute -bottom-16 -right-5 w-48 h-48 bg-white/10 rounded-full"></div>
+            <div className="relative z-10">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Siap Membuat Sertifikat Profesional?</h2>
+              <p className="text-emerald-100 text-xl mb-8">Bergabunglah dengan ribuan pengguna dan tingkatkan kualitas sertifikat Anda hari ini.</p>
+              <button
+                onClick={onGetStarted}
+                className="bg-white text-emerald-600 px-10 py-4 rounded-full hover:bg-emerald-50 transform hover:scale-105 transition-all duration-300 font-bold text-xl shadow-lg"
+              >
+                {isAuthenticated ? 'Open Dashboard' : 'Coba Gratis Sekarang'}
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold">CertifikatKu</span>
-              </div>
-              <p className="text-gray-400">
-                Platform terdepan untuk membuat sertifikat profesional dengan mudah dan cepat.
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Produk</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Template</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Editor</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Batch Generation</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Dukungan</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Bantuan</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Tutorial</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Kontak</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Perusahaan</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Tentang Kami</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Karir</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 CertifikatKu. Semua hak dilindungi.</p>
-          </div>
+      <footer className="bg-white border-t border-gray-200">
+        <div className="container mx-auto py-8 px-6 text-center text-gray-500">
+          <p>&copy; {new Date().getFullYear()} sertiku.id. Hak cipta dilindungi.</p>
         </div>
       </footer>
     </div>
   );
-};
+});

@@ -441,7 +441,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
                         type="number"
                         value={selectedElement.textStyle?.fontSize || 16}
                         onChange={(e) => updateElement(selectedElement.id, {
-                          textStyle: { ...selectedElement.textStyle, fontSize: parseInt(e.target.value) || 16 }
+                          textStyle: { fontFamily: 'Arial', fontSize: 16, ...selectedElement.textStyle, fontSize: parseInt(e.target.value) || 16 }
                         })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                       />
@@ -452,7 +452,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
                         type="color"
                         value={selectedElement.textStyle?.color || '#000000'}
                         onChange={(e) => updateElement(selectedElement.id, {
-                          textStyle: { ...selectedElement.textStyle, color: e.target.value }
+                          textStyle: { fontFamily: 'Arial', fontSize: 16, ...selectedElement.textStyle, color: e.target.value }
                         })}
                         className="w-full h-10 border border-gray-300 rounded-md"
                       />

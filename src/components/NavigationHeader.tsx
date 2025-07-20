@@ -1,173 +1,160 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Home, FileText, Edit3, LogOut, User, Coins, History, Bug } from 'lucide-react';
+import { ArrowLeft, Home, LogOut, User, Coins, History, Bug, Shield } from 'lucide-react';
 import { AuthTest } from './AuthTest';
-
-interface NavigationStep {
-  id: string;
-  label: string;
-  icon?: React.ReactNode;
-  onClick?: () => void;
-}
+import { useAuthStore } from '../store/authStore';
 
 interface NavigationHeaderProps {
-  currentStep: string;
-  steps: NavigationStep[];
   onBack?: () => void;
   onHome?: () => void;
   onProfile?: () => void;
   onBuyPoints?: () => void;
   onTransactionHistory?: () => void;
+  onAdmin?: () => void;
   onSignOut?: () => void;
   showBackButton?: boolean;
   showHomeButton?: boolean;
 }
 
 export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
-  currentStep,
-  steps,
   onBack,
   onHome,
   onProfile,
   onBuyPoints,
   onTransactionHistory,
+  onAdmin,
   onSignOut,
   showBackButton = true,
   showHomeButton = true,
 }) => {
-  const currentStepIndex = steps.findIndex(step => step.id === currentStep);
   const [showAuthTest, setShowAuthTest] = useState(false);
-  
-  // Only show debug button in development
+  const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
+  const { user } = useAuthStore();
+
   const isDevelopment = import.meta.env.DEV;
+  const isAdmin = user?.roles?.includes('admin') || user?.roles?.includes('ADMIN');
+
+  const handleProfileClick = (action?: () => void) => {
+    if (action) action();
+    setProfileMenuOpen(false);
+  };
 
   return (
-    <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-      {/* Left side - Back button and breadcrumb */}
-      <div className="flex items-center space-x-4">
-        {showBackButton && onBack && (
-          <button
-            onClick={onBack}
-            className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Kembali</span>
-          </button>
-        )}
-        
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm">
-          {steps.map((step, index) => {
-            const isActive = step.id === currentStep;
-            const isClickable = step.onClick && index <= currentStepIndex;
-            
-            return (
-              <React.Fragment key={step.id}>
-                {index > 0 && (
-                  <span className="text-gray-400">/</span>
-                )}
-                <button
-                  onClick={isClickable ? step.onClick : undefined}
-                  disabled={!isClickable}
-                  className={`flex items-center space-x-1 px-2 py-1 rounded transition-colors ${
-                    isActive
-                      ? 'text-emerald-600 bg-emerald-50 font-medium'
-                      : isClickable
-                      ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                      : 'text-gray-400 cursor-not-allowed'
-                  }`}
+    <header className="bg-white shadow-sm sticky top-0 z-40">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Left side */}
+          <div className="flex items-center gap-4">
+            {showBackButton && onBack && (
+              <button
+                onClick={onBack}
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors p-2 rounded-md hover:bg-gray-100"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back</span>
+              </button>
+            )}
+            {showHomeButton && onHome && (
+              <button
+                onClick={onHome}
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
+                title="Home"
+              >
+                <Home className="w-6 h-6" />
+              </button>
+            )}
+          </div>
+
+          {/* Right side */}
+          <div className="flex items-center gap-4">
+            {onBuyPoints && (
+              <button
+                onClick={onBuyPoints}
+                className="hidden sm:flex items-center gap-2 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-lg transition-all duration-200 shadow-sm"
+              >
+                <Coins className="w-5 h-5" />
+                <span>Buy Points</span>
+              </button>
+            )}
+
+            {isAdmin && onAdmin && (
+              <button
+                onClick={onAdmin}
+                className="hidden sm:flex items-center gap-2 text-sm font-semibold text-white bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded-lg transition-all duration-200 shadow-sm"
+              >
+                <Shield className="w-5 h-5" />
+                <span>Admin</span>
+              </button>
+            )}
+
+            {isDevelopment && (
+              <button
+                onClick={() => setShowAuthTest(true)}
+                className="p-2 text-orange-600 hover:text-orange-900 hover:bg-orange-100 rounded-full transition-colors"
+                title="Test API Authentication"
+              >
+                <Bug className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setProfileMenuOpen(!isProfileMenuOpen)}
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+              >
+                <User className="w-6 h-6" />
+              </button>
+
+              {isProfileMenuOpen && (
+                <div
+                  className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="menu-button"
                 >
-                  {step.icon && <span className="w-4 h-4">{step.icon}</span>}
-                  <span>{step.label}</span>
-                </button>
-              </React.Fragment>
-            );
-          })}
-        </nav>
+                  <div className="py-1" role="none">
+                    {onProfile && (
+                      <a
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); handleProfileClick(onProfile); }}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        role="menuitem"
+                      >
+                        <User className="w-5 h-5" />
+                        <span>Profile</span>
+                      </a>
+                    )}
+                    {onTransactionHistory && (
+                      <a
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); handleProfileClick(onTransactionHistory); }}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        role="menuitem"
+                      >
+                        <History className="w-5 h-5" />
+                        <span>Transaction History</span>
+                      </a>
+                    )}
+                    {onSignOut && (
+                      <a
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); handleProfileClick(onSignOut); }}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
+                        role="menuitem"
+                      >
+                        <LogOut className="w-5 h-5" />
+                        <span>Sign Out</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Right side - Action buttons */}
-      <div className="flex items-center space-x-2">
-        {showHomeButton && onHome && (
-          <button
-            onClick={onHome}
-            className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Home"
-          >
-            <Home className="w-4 h-4" />
-          </button>
-        )}
-        
-        {/* Debug button - only in development */}
-        {isDevelopment && (
-          <button
-            onClick={() => setShowAuthTest(true)}
-            className="flex items-center space-x-2 px-3 py-2 text-orange-600 hover:text-orange-900 hover:bg-orange-100 rounded-lg transition-colors"
-            title="Test API Authentication"
-          >
-            <Bug className="w-4 h-4" />
-          </button>
-        )}
-        {onProfile && (
-          <button
-            onClick={onProfile}
-            className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <User className="w-4 h-4" />
-            <span className="text-sm font-medium">Profil</span>
-          </button>
-        )}
-        {onBuyPoints && (
-          <button
-            onClick={onBuyPoints}
-            className="flex items-center space-x-2 px-3 py-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
-          >
-            <Coins className="w-4 h-4" />
-            <span className="text-sm font-medium">Beli Poin</span>
-          </button>
-        )}
-        {onTransactionHistory && (
-          <button
-            onClick={onTransactionHistory}
-            className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <History className="w-4 h-4" />
-            <span className="text-sm font-medium">Riwayat Transaksi</span>
-          </button>
-        )}
-        {onSignOut && (
-          <button
-            onClick={onSignOut}
-            className="flex items-center space-x-2 px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="text-sm font-medium">Keluar</span>
-          </button>
-        )}
-      </div>
-      
-      {/* Auth Test Modal */}
-      {showAuthTest && (
-        <AuthTest onClose={() => setShowAuthTest(false)} />
-      )}
-    </div>
+      {showAuthTest && <AuthTest onClose={() => setShowAuthTest(false)} />}
+    </header>
   );
 };
-
-// Predefined navigation steps for the application
-export const APP_NAVIGATION_STEPS: NavigationStep[] = [
-  {
-    id: 'landing',
-    label: 'Beranda',
-    icon: <Home className="w-4 h-4" />,
-  },
-  {
-    id: 'template-selection',
-    label: 'Pilih Template',
-    icon: <FileText className="w-4 h-4" />,
-  },
-  {
-    id: 'editor',
-    label: 'Editor Sertifikat',
-    icon: <Edit3 className="w-4 h-4" />,
-  },
-];

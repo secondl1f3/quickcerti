@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, FileText, Save, Download, Search, Filter, Edit, Trash2, Copy, Eye, Upload, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { useDesignStore } from '../store/designStore';
-import { useDataStore } from '../store/dataStore';
+import { useDatasetStore } from '../store/datasetStore';
 import { useTemplateStore } from '../store/templateStore';
 import { UploadModal } from './UploadModal';
 import { TemplateEditor } from './TemplateEditor';
@@ -15,7 +15,7 @@ interface TemplateModalProps {
 
 export const TemplateModal: React.FC<TemplateModalProps> = ({ onClose, onTemplateSelect }) => {
   const { elements, setElements } = useDesignStore();
-  const { variables } = useDataStore();
+  const { variables } = useDatasetStore();
   const { templates, addTemplate, updateTemplate, deleteTemplate, duplicateTemplate } = useTemplateStore();
   const { t } = useTranslation();
   

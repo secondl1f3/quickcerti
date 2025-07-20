@@ -11,7 +11,7 @@ import { DesignService, InsufficientPointsError } from '../services/designServic
 import { useAuthStore } from '../store/authStore';
 import { useUserStore } from '../store/userStore';
 import { useDesignStore } from '../store/designStore';
-import { useDataStore } from '../store/dataStore';
+import { useDatasetStore } from '../store/datasetStore';
 import { usePointStore } from '../store/pointStore';
 
 import { getUserProfile } from '../services/userService';
@@ -79,7 +79,7 @@ export const CertificateDesigner: React.FC<CertificateDesignerProps> = ({
   const { user } = useAuthStore();
   const { profile, fetchUserProfile } = useUserStore();
   const { setElements } = useDesignStore();
-  const { data, variables } = useDataStore();
+  const { data, variables, currentDataset } = useDatasetStore();
   const pointStore = usePointStore();
 
   // Auto-save functionality
@@ -196,7 +196,7 @@ export const CertificateDesigner: React.FC<CertificateDesignerProps> = ({
     };
 
     checkPoints();
-  }, [elements, pageCount]);
+  }, [pageCount]);
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
@@ -229,19 +229,7 @@ export const CertificateDesigner: React.FC<CertificateDesignerProps> = ({
               />
             </div>
             
-            {/* Points Display */}
-            {pointsCheck && (
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="text-gray-600">Points needed: {pointsCheck.requiredPoints}</span>
-                <span className="text-gray-600">|</span>
-                <span className="text-gray-600">Available: {pointsCheck.currentPoints}</span>
-                <span className={`font-medium ${
-                  pointsCheck.hasEnoughPoints ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {pointsCheck.hasEnoughPoints ? '✓' : '✗'}
-                </span>
-              </div>
-            )}
+
             
 
             
@@ -347,7 +335,7 @@ export const CertificateDesigner: React.FC<CertificateDesignerProps> = ({
       </div>
       
       {/* Main Content */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex min-h-0">
         <Sidebar
           activeTool={activeTool}
           onToolChange={setActiveTool}

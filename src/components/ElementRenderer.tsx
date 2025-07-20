@@ -31,9 +31,9 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onClick(e);
     
-    if (element.type === 'text' && isSelected && e.detail === 2) {
+    // Handle double-click for text editing BEFORE calling onClick
+    if (element.type === 'text' && e.detail === 2) {
       if (e.ctrlKey || e.metaKey) {
         // Ctrl/Cmd + double-click to edit variable name
         setIsEditingVariable(true);
@@ -43,6 +43,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({
       }
       return;
     }
+    
+    onClick(e);
     
     setIsDragging(true);
     setDragStart({

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, FileText, Image, Download, AlertCircle, CheckCircle, Coins } from 'lucide-react';
-import { useDataStore } from '../store/dataStore';
+import { useDatasetStore } from '../store/datasetStore';
 import { useDesignStore } from '../store/designStore';
 import { CertificateGenerator } from '../utils/certificateGenerator';
 import { useTranslation } from '../i18n/i18nContext';
@@ -12,13 +12,13 @@ interface GenerateModalProps {
 }
 
 export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
-  const { data, variables } = useDataStore();
+  const { data, variables, currentDataset } = useDatasetStore();
   const { elements } = useDesignStore();
   const { user } = useAuthStore();
   const { userPoints, fetchUserPoints, createTransaction } = usePointStore();
   const [format, setFormat] = useState<'pdf' | 'png' | 'jpg'>('pdf');
   const [quality, setQuality] = useState(90);
-  const [filenameField, setFilenameField] = useState(variables[0]?.name || '');
+  const [filenameField, setFilenameField] = useState(variables?.[0]?.name || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -32,12 +32,17 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
   }, [fetchUserPoints]);
 
   // Calculate required points (1 point per certificate)
-  const requiredPoints = data.length;
+  const requiredPoints = data?.length || 0;
   const hasEnoughPoints = userPoints >= requiredPoints;
 
   const handleGenerate = async () => {
-    if (data.length === 0) {
-      setError('No data available for generation');
+    if (!currentDataset) {
+      setError('No dataset selected. Please select a dataset from the Data Manager.');
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setError(`No data available for generation. The dataset "${currentDataset.name}" has no data rows.`);
       return;
     }
 
@@ -114,10 +119,11 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
   };
 
   const getDownloadInfo = () => {
-    if (data.length === 1) {
+    const dataLength = data?.length || 0;
+    if (dataLength === 1) {
       return t('singleCertificateDownload', { format: format.toUpperCase() });
     } else {
-      return t('multipleCertificatesDownload', { count: data.length, format: format.toUpperCase() });
+      return t('multipleCertificatesDownload', { count: dataLength, format: format.toUpperCase() });
     }
   };
 
@@ -201,10 +207,12 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:opacity-50"
             >
               <option value="">Use default naming</option>
-              {variables.map((variable) => (
-                <option key={variable.name} value={variable.name}>
-                  {variable.name}
-                </option>
+              {variables?.map((variable) => (
+                variable && variable.name ? (
+                  <option key={variable.name} value={variable.name}>
+                    {variable.name}
+                  </option>
+                ) : null
               ))}
             </select>
             <p className="text-xs text-gray-500 mt-1">
@@ -248,9 +256,9 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
           <div className="bg-gray-50 p-4 rounded-lg">
             <h3 className="font-medium text-gray-900 mb-2">{t('downloadInformation')}</h3>
             <div className="space-y-1 text-sm text-gray-600">
-              <p>Files to generate: <span className="font-medium">{data.length}</span></p>
+              <p>Files to generate: <span className="font-medium">{data?.length || 0}</span></p>
               <p>Format: <span className="font-medium">{format.toUpperCase()}</span></p>
-              <p>Variables: <span className="font-medium">{variables.length}</span></p>
+              <p>Variables: <span className="font-medium">{variables?.length || 0}</span></p>
               <p>Elements: <span className="font-medium">{elements.length}</span></p>
             </div>
             <div className="mt-3 p-3 bg-blue-50 rounded-md">
@@ -305,7 +313,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
                 <div className="flex-1">
                   <h4 className="font-medium text-yellow-800 mb-2">Confirm Download</h4>
                   <p className="text-sm text-yellow-700 mb-3">
-                    This will deduct <strong>{requiredPoints} points</strong> from your balance to download {data.length} {format.toUpperCase()} {data.length === 1 ? 'file' : 'files'}.
+                    This will deduct <strong>{requiredPoints} points</strong> from your balance to download {data?.length || 0} {format.toUpperCase()} {(data?.length || 0) === 1 ? 'file' : 'files'}.
                   </p>
                   <div className="flex space-x-2">
                     <button
@@ -337,7 +345,7 @@ export const GenerateModal: React.FC<GenerateModalProps> = ({ onClose }) => {
             </button>
             <button
               onClick={handleGenerate}
-              disabled={isGenerating || data.length === 0 || elements.length === 0 || !hasEnoughPoints}
+              disabled={isGenerating || !data || data.length === 0 || elements.length === 0 || !hasEnoughPoints}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               <Download size={20} />

@@ -58,23 +58,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="w-16 bg-slate-900 border-r border-slate-700 flex flex-col">
         {/* Tools */}
         <div className="p-2 space-y-1">
-          {tools.map(({ id, icon: Icon, label }) => (
-            <button
-              key={id}
-              onClick={() => onToolChange(id)}
-              className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors group relative ${
-                activeTool === id
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-              }`}
-              title={label}
-            >
-              <Icon size={20} />
-              <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-                {label}
-              </span>
-            </button>
-          ))}
+          {tools.map(({ id, icon: Icon, label }) => {
+            const isActive = activeTool === id;
+            const isCreationTool = !['select', 'pan'].includes(id);
+            
+            return (
+              <button
+                key={id}
+                onClick={() => onToolChange(id)}
+                className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 group relative ${
+                  isActive
+                    ? isCreationTool
+                      ? 'bg-blue-600 text-white ring-2 ring-blue-300 ring-opacity-50'
+                      : 'bg-blue-600 text-white'
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}
+                title={label}
+              >
+                <Icon size={20} />
+                {isActive && isCreationTool && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                )}
+                <span className={`absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap ${
+                  isActive && isCreationTool ? 'bg-blue-700' : ''
+                }`}>
+                  {label}
+                   {isActive && isCreationTool && (
+                     <div className="text-xs text-blue-200 mt-1">
+                       {t('clickOnCanvasToAdd')}
+                     </div>
+                   )}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Divider */}

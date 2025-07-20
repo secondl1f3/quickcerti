@@ -1,6 +1,6 @@
 import React from 'react';
 import { DesignElement, Variable } from '../types';
-import { X, AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd } from 'lucide-react';
+import { AlignLeft, AlignCenter, AlignRight, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd } from 'lucide-react';
 import { useTranslation } from '../i18n/i18nContext';
 
 interface PropertiesPanelProps {
@@ -18,9 +18,11 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   
   if (!selectedElement) {
     return (
-      <div className="w-80 bg-white border-l border-gray-200 p-6">
-        <div className="text-center text-gray-500">
-          <p>{t('selectElementToEdit')}</p>
+      <div className="w-80 bg-white border-l border-gray-200 flex flex-col h-full">
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="text-center text-gray-500">
+            <p>{t('selectElementToEdit')}</p>
+          </div>
         </div>
       </div>
     );
@@ -31,378 +33,394 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   };
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto">
-      <div className="space-y-6">
-        {/* Element Type */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 capitalize">
-            {selectedElement.type} {t('properties')}
-          </h3>
-        </div>
+    <div className="w-80 bg-white border-l border-gray-200 flex flex-col h-full">
+      {/* --- Static Header --- */}
+      <div className="p-6 border-b border-gray-200">
+        <h3 className="text-lg font-semibold capitalize">
+          {selectedElement.type} {t('properties')}
+        </h3>
+      </div>
 
-        {/* Position & Size */}
-        <div className="space-y-3">
-          <h4 className="font-medium text-gray-700">{t('positionSize')}</h4>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('x')}</label>
-              <input
-                type="number"
-                value={Math.round(selectedElement.position.x)}
-                onChange={(e) => handleUpdate({
-                  position: { ...selectedElement.position, x: parseInt(e.target.value) || 0 }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('y')}</label>
-              <input
-                type="number"
-                value={Math.round(selectedElement.position.y)}
-                onChange={(e) => handleUpdate({
-                  position: { ...selectedElement.position, y: parseInt(e.target.value) || 0 }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('width')}</label>
-              <input
-                type="number"
-                value={Math.round(selectedElement.size.width)}
-                onChange={(e) => handleUpdate({
-                  size: { ...selectedElement.size, width: parseInt(e.target.value) || 0 }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('height')}</label>
-              <input
-                type="number"
-                value={Math.round(selectedElement.size.height)}
-                onChange={(e) => handleUpdate({
-                  size: { ...selectedElement.size, height: parseInt(e.target.value) || 0 }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
-          </div>
-        </div>
+      {/* --- Independently Scrollable Body --- */}
+      <div className="flex-1 overflow-y-auto p-6 min-h-0">
+        <div className="space-y-6">
 
-        {/* Rotation & Opacity */}
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">{t('rotation')}</label>
-            <input
-              type="number"
-              value={selectedElement.rotation}
-              onChange={(e) => handleUpdate({ rotation: parseInt(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">{t('opacity')}</label>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={selectedElement.opacity}
-              onChange={(e) => handleUpdate({ opacity: parseFloat(e.target.value) })}
-              className="w-full"
-            />
-            <div className="text-xs text-gray-500 mt-1">
-              {Math.round(selectedElement.opacity * 100)}%
-            </div>
-          </div>
-        </div>
-
-        {/* Text Properties */}
-        {selectedElement.type === 'text' && (
+          {/* Position & Size */}
           <div className="space-y-3">
-            <h4 className="font-medium text-gray-700">{t('textProperties')}</h4>
-            
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('text')}</label>
-              <textarea
-                value={selectedElement.text || ''}
-                onChange={(e) => handleUpdate({ text: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('fontFamily')}</label>
-              <select
-                value={selectedElement.textStyle?.fontFamily || 'Arial'}
-                onChange={(e) => handleUpdate({
-                  textStyle: { 
-                    fontFamily: 'Arial',
-                    fontSize: 16,
-                    color: '#000000',
-                    ...selectedElement.textStyle,
-                    fontFamily: e.target.value 
-                  }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="Arial">Arial</option>
-                <option value="Times New Roman">Times New Roman</option>
-                <option value="Helvetica">Helvetica</option>
-                <option value="Georgia">Georgia</option>
-                <option value="Verdana">Verdana</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('fontSize')}</label>
-              <input
-                type="number"
-                value={selectedElement.textStyle?.fontSize || 16}
-                onChange={(e) => handleUpdate({
-                  textStyle: { 
-                    fontFamily: 'Arial',
-                    fontSize: 16,
-                    color: '#000000',
-                    ...selectedElement.textStyle,
-                    fontSize: parseInt(e.target.value) || 16 
-                  }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('color')}</label>
-              <input
-                type="color"
-                value={selectedElement.textStyle?.color || '#000000'}
-                onChange={(e) => handleUpdate({
-                  textStyle: { 
-                    fontFamily: 'Arial',
-                    fontSize: 16,
-                    color: '#000000',
-                    ...selectedElement.textStyle,
-                    color: e.target.value 
-                  }
-                })}
-                className="w-full h-10 border border-gray-300 rounded-md"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 mb-2">{t('textAlign')}</label>
-              <div className="flex space-x-1">
-                {['left', 'center', 'right'].map((align) => (
-                  <button
-                    key={align}
-                    onClick={() => handleUpdate({
-                      textStyle: { 
-                        fontFamily: 'Arial',
-                        fontSize: 16,
-                        color: '#000000',
-                        ...selectedElement.textStyle,
-                        textAlign: align as any 
-                      }
-                    })}
-                    className={`px-3 py-2 rounded-md text-sm border ${
-                      selectedElement.textStyle?.textAlign === align
-                        ? 'bg-blue-500 text-white border-blue-500'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {align === 'left' && <AlignLeft size={16} />}
-                    {align === 'center' && <AlignCenter size={16} />}
-                    {align === 'right' && <AlignRight size={16} />}
-                  </button>
-                ))}
+            <h4 className="font-medium text-gray-700">{t('positionSize')}</h4>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">{t('x')}</label>
+                <input
+                  type="number"
+                  value={Math.round(selectedElement.position.x)}
+                  onChange={(e) => handleUpdate({
+                    position: { ...selectedElement.position, x: parseInt(e.target.value) || 0 }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">{t('y')}</label>
+                <input
+                  type="number"
+                  value={Math.round(selectedElement.position.y)}
+                  onChange={(e) => handleUpdate({
+                    position: { ...selectedElement.position, y: parseInt(e.target.value) || 0 }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">{t('width')}</label>
+                <input
+                  type="number"
+                  value={Math.round(selectedElement.size.width)}
+                  onChange={(e) => handleUpdate({
+                    size: { ...selectedElement.size, width: parseInt(e.target.value) || 0 }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">{t('height')}</label>
+                <input
+                  type="number"
+                  value={Math.round(selectedElement.size.height)}
+                  onChange={(e) => handleUpdate({
+                    size: { ...selectedElement.size, height: parseInt(e.target.value) || 0 }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
               </div>
             </div>
+          </div>
 
+          {/* Rotation & Opacity */}
+          <div className="space-y-3">
             <div>
-              <label className="block text-sm text-gray-600 mb-2">Vertical Align</label>
-              <div className="flex space-x-1">
-                {['top', 'center', 'bottom'].map((align) => (
-                  <button
-                    key={align}
-                    onClick={() => handleUpdate({
-                      textStyle: { 
-                        fontFamily: 'Arial',
-                        fontSize: 16,
-                        color: '#000000',
-                        ...selectedElement.textStyle,
-                        verticalAlign: align as any 
-                      }
-                    })}
-                    className={`px-3 py-2 rounded-md text-sm border ${
-                      selectedElement.textStyle?.verticalAlign === align
-                        ? 'bg-blue-500 text-white border-blue-500'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {align === 'top' && <AlignVerticalJustifyStart size={16} />}
-                    {align === 'center' && <AlignVerticalJustifyCenter size={16} />}
-                    {align === 'bottom' && <AlignVerticalJustifyEnd size={16} />}
-                  </button>
-                ))}
+              <label className="block text-sm text-gray-600 mb-1">{t('rotation')}</label>
+              <input
+                type="number"
+                value={selectedElement.rotation}
+                onChange={(e) => handleUpdate({ rotation: parseInt(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">{t('opacity')}</label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={selectedElement.opacity}
+                onChange={(e) => handleUpdate({ opacity: parseFloat(e.target.value) })}
+                className="w-full"
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                {Math.round(selectedElement.opacity * 100)}%
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 mb-2">Font Weight</label>
-              <select
-                value={selectedElement.textStyle?.fontWeight || 'normal'}
-                onChange={(e) => handleUpdate({
-                  textStyle: { 
-                    fontFamily: 'Arial',
-                    fontSize: 16,
-                    color: '#000000',
-                    ...selectedElement.textStyle,
-                    fontWeight: e.target.value 
-                  }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="normal">Normal</option>
-                <option value="bold">Bold</option>
-                <option value="lighter">Light</option>
-              </select>
-            </div>
-
-            {/* Variable Assignment */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Variable</label>
-              <select
-                value={selectedElement.variableName || ''}
-                onChange={(e) => handleUpdate({
-                  isVariable: !!e.target.value,
-                  variableName: e.target.value || undefined
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="">No variable</option>
-                {variables.map((variable) => (
-                  <option key={variable.name} value={variable.name}>
-                    {variable.name}
-                  </option>
-                ))}
-              </select>
-              {selectedElement.isVariable && (
-                <p className="text-xs text-blue-600 mt-1">
-                  This text will be replaced with variable data
-                </p>
-              )}
-            </div>
           </div>
-        )}
 
-        {/* Shape Properties */}
-        {(selectedElement.type === 'rectangle' || selectedElement.type === 'circle') && (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-700">Shape Properties</h4>
-            
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Background Color</label>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="transparent-bg"
-                    checked={selectedElement.backgroundColor === 'transparent'}
-                    onChange={(e) => handleUpdate({ 
-                      backgroundColor: e.target.checked ? 'transparent' : '#ffffff' 
-                    })}
-                    className="rounded"
-                  />
-                  <label htmlFor="transparent-bg" className="text-sm text-gray-600">
-                     {t('transparent')}
-                   </label>
+          {/* Text Properties */}
+          {selectedElement.type === 'text' && (
+            <div className="space-y-3">
+              <h4 className="font-medium text-gray-700">{t('textProperties')}</h4>
+              
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">{t('text')}</label>
+                <textarea
+                  value={selectedElement.text || ''}
+                  onChange={(e) => handleUpdate({ text: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">{t('fontFamily')}</label>
+                <select
+                  value={selectedElement.textStyle?.fontFamily || 'Arial'}
+                  onChange={(e) => handleUpdate({
+                    textStyle: { 
+                      ...selectedElement.textStyle,
+                      fontFamily: 'Arial',
+                      fontSize: 16,
+                      fontWeight: 'normal',
+                      color: '#000000',
+                      textAlign: 'left' as const,
+                      ...selectedElement.textStyle,
+                      fontFamily: e.target.value 
+                    }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                >
+                  <option value="Arial">Arial</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Helvetica">Helvetica</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Verdana">Verdana</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">{t('fontSize')}</label>
+                <input
+                  type="number"
+                  value={selectedElement.textStyle?.fontSize || 16}
+                  onChange={(e) => handleUpdate({
+                    textStyle: { 
+                      fontFamily: 'Arial',
+                      fontSize: 16,
+                      fontWeight: 'normal',
+                      color: '#000000',
+                      textAlign: 'left' as const,
+                      ...selectedElement.textStyle,
+                      fontSize: parseInt(e.target.value) || 16 
+                    }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">{t('color')}</label>
+                <input
+                  type="color"
+                  value={selectedElement.textStyle?.color || '#000000'}
+                  onChange={(e) => handleUpdate({
+                    textStyle: { 
+                      fontFamily: 'Arial',
+                      fontSize: 16,
+                      fontWeight: 'normal',
+                      textAlign: 'left' as const,
+                      ...selectedElement.textStyle,
+                      color: e.target.value 
+                    }
+                  })}
+                  className="w-full h-10 border border-gray-300 rounded-md"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">{t('textAlign')}</label>
+                <div className="flex space-x-1">
+                  {['left', 'center', 'right'].map((align) => (
+                    <button
+                      key={align}
+                      onClick={() => handleUpdate({
+                        textStyle: { 
+                          fontFamily: 'Arial',
+                          fontSize: 16,
+                          fontWeight: 'normal',
+                          color: '#000000',
+                          ...selectedElement.textStyle,
+                          textAlign: align as 'left' | 'center' | 'right'
+                        }
+                      })}
+                      className={`px-3 py-2 rounded-md text-sm border ${
+                        selectedElement.textStyle?.textAlign === align
+                          ? 'bg-blue-500 text-white border-blue-500'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {align === 'left' && <AlignLeft size={16} />}
+                      {align === 'center' && <AlignCenter size={16} />}
+                      {align === 'right' && <AlignRight size={16} />}
+                    </button>
+                  ))}
                 </div>
-                {selectedElement.backgroundColor !== 'transparent' && (
-                  <input
-                    type="color"
-                    value={selectedElement.backgroundColor || '#ffffff'}
-                    onChange={(e) => handleUpdate({ backgroundColor: e.target.value })}
-                    className="w-full h-10 border border-gray-300 rounded-md"
-                  />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">Vertical Align</label>
+                <div className="flex space-x-1">
+                  {['top', 'center', 'bottom'].map((align) => (
+                    <button
+                      key={align}
+                      onClick={() => handleUpdate({
+                        textStyle: { 
+                          fontFamily: 'Arial',
+                          fontSize: 16,
+                          fontWeight: 'normal',
+                          color: '#000000',
+                          textAlign: 'left' as const,
+                          ...selectedElement.textStyle,
+                          verticalAlign: align as 'top' | 'center' | 'bottom'
+                        }
+                      })}
+                      className={`px-3 py-2 rounded-md text-sm border ${
+                        selectedElement.textStyle?.verticalAlign === align
+                          ? 'bg-blue-500 text-white border-blue-500'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {align === 'top' && <AlignVerticalJustifyStart size={16} />}
+                      {align === 'center' && <AlignVerticalJustifyCenter size={16} />}
+                      {align === 'bottom' && <AlignVerticalJustifyEnd size={16} />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">Font Weight</label>
+                <select
+                  value={selectedElement.textStyle?.fontWeight || 'normal'}
+                  onChange={(e) => handleUpdate({
+                    textStyle: { 
+                      fontFamily: 'Arial',
+                      fontSize: 16,
+                      color: '#000000',
+                      textAlign: 'left' as const,
+                      ...selectedElement.textStyle,
+                      fontWeight: e.target.value 
+                    }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                >
+                  <option value="normal">Normal</option>
+                  <option value="bold">Bold</option>
+                  <option value="lighter">Light</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Variable</label>
+                <select
+                  value={selectedElement.variableName || ''}
+                  onChange={(e) => handleUpdate({
+                    isVariable: !!e.target.value,
+                    variableName: e.target.value || undefined
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                >
+                  <option value="">No variable</option>
+                  {variables?.map((variable) => (
+                    variable && variable.name ? (
+                      <option key={variable.name} value={variable.name}>
+                        {variable.name}
+                      </option>
+                    ) : null
+                  ))}
+                </select>
+                {selectedElement.isVariable && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    This text will be replaced with variable data
+                  </p>
                 )}
               </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Border Color</label>
-              <input
-                type="color"
-                value={selectedElement.borderStyle?.color || '#000000'}
-                onChange={(e) => handleUpdate({
-                  borderStyle: { ...selectedElement.borderStyle, color: e.target.value, width: selectedElement.borderStyle?.width || 1, style: selectedElement.borderStyle?.style || 'solid' }
-                })}
-                className="w-full h-10 border border-gray-300 rounded-md"
-              />
-            </div>
+          {/* Shape Properties */}
+          {(selectedElement.type === 'rectangle' || selectedElement.type === 'circle') && (
+            <div className="space-y-3">
+              <h4 className="font-medium text-gray-700">Shape Properties</h4>
+              
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Background Color</label>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="transparent-bg"
+                      checked={selectedElement.backgroundColor === 'transparent'}
+                      onChange={(e) => handleUpdate({ 
+                        backgroundColor: e.target.checked ? 'transparent' : '#ffffff' 
+                      })}
+                      className="rounded"
+                    />
+                    <label htmlFor="transparent-bg" className="text-sm text-gray-600">
+                      {t('transparent')}
+                    </label>
+                  </div>
+                  {selectedElement.backgroundColor !== 'transparent' && (
+                    <input
+                      type="color"
+                      value={selectedElement.backgroundColor || '#ffffff'}
+                      onChange={(e) => handleUpdate({ backgroundColor: e.target.value })}
+                      className="w-full h-10 border border-gray-300 rounded-md"
+                    />
+                  )}
+                </div>
+              </div>
 
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Border Width</label>
-              <input
-                type="number"
-                value={selectedElement.borderStyle?.width || 0}
-                onChange={(e) => handleUpdate({
-                  borderStyle: { ...selectedElement.borderStyle, width: parseInt(e.target.value) || 0, color: selectedElement.borderStyle?.color || '#000000', style: selectedElement.borderStyle?.style || 'solid' }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
-          </div>
-        )}
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Border Color</label>
+                <input
+                  type="color"
+                  value={selectedElement.borderStyle?.color || '#000000'}
+                  onChange={(e) => handleUpdate({
+                    borderStyle: { ...selectedElement.borderStyle, color: e.target.value, width: selectedElement.borderStyle?.width || 1, style: selectedElement.borderStyle?.style || 'solid' }
+                  })}
+                  className="w-full h-10 border border-gray-300 rounded-md"
+                />
+              </div>
 
-        {/* Line Properties */}
-        {selectedElement.type === 'line' && (
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-700">Line Properties</h4>
-            
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Color</label>
-              <input
-                type="color"
-                value={selectedElement.lineStyle?.color || '#000000'}
-                onChange={(e) => handleUpdate({
-                  lineStyle: { ...selectedElement.lineStyle, color: e.target.value, width: selectedElement.lineStyle?.width || 1, style: selectedElement.lineStyle?.style || 'solid' }
-                })}
-                className="w-full h-10 border border-gray-300 rounded-md"
-              />
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Border Width</label>
+                <input
+                  type="number"
+                  value={selectedElement.borderStyle?.width || 0}
+                  onChange={(e) => handleUpdate({
+                    borderStyle: { ...selectedElement.borderStyle, width: parseInt(e.target.value) || 0, color: selectedElement.borderStyle?.color || '#000000', style: selectedElement.borderStyle?.style || 'solid' }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
+              </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Width</label>
-              <input
-                type="number"
-                value={selectedElement.lineStyle?.width || 1}
-                onChange={(e) => handleUpdate({
-                  lineStyle: { ...selectedElement.lineStyle, width: parseInt(e.target.value) || 1, color: selectedElement.lineStyle?.color || '#000000', style: selectedElement.lineStyle?.style || 'solid' }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
+          {/* Line Properties */}
+          {selectedElement.type === 'line' && (
+            <div className="space-y-3">
+              <h4 className="font-medium text-gray-700">Line Properties</h4>
+              
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Color</label>
+                <input
+                  type="color"
+                  value={selectedElement.lineStyle?.color || '#000000'}
+                  onChange={(e) => handleUpdate({
+                    lineStyle: { ...selectedElement.lineStyle, color: e.target.value, width: selectedElement.lineStyle?.width || 1, style: selectedElement.lineStyle?.style || 'solid' }
+                  })}
+                  className="w-full h-10 border border-gray-300 rounded-md"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Style</label>
-              <select
-                value={selectedElement.lineStyle?.style || 'solid'}
-                onChange={(e) => handleUpdate({
-                  lineStyle: { ...selectedElement.lineStyle, style: e.target.value as any, color: selectedElement.lineStyle?.color || '#000000', width: selectedElement.lineStyle?.width || 1 }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="solid">Solid</option>
-                <option value="dashed">Dashed</option>
-                <option value="dotted">Dotted</option>
-              </select>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Width</label>
+                <input
+                  type="number"
+                  value={selectedElement.lineStyle?.width || 1}
+                  onChange={(e) => handleUpdate({
+                    lineStyle: { ...selectedElement.lineStyle, width: parseInt(e.target.value) || 1, color: selectedElement.lineStyle?.color || '#000000', style: selectedElement.lineStyle?.style || 'solid' }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Style</label>
+                <select
+                  value={selectedElement.lineStyle?.style || 'solid'}
+                  onChange={(e) => handleUpdate({
+                    lineStyle: { ...selectedElement.lineStyle, style: e.target.value as any, color: selectedElement.lineStyle?.color || '#000000', width: selectedElement.lineStyle?.width || 1 }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                >
+                  <option value="solid">Solid</option>
+                  <option value="dashed">Dashed</option>
+                  <option value="dotted">Dotted</option>
+                </select>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+        </div>
       </div>
     </div>
   );

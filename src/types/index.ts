@@ -58,13 +58,16 @@ export interface DesignElement {
 }
 
 export interface DataRow {
-  [key: string]: string | number;
+  id?: string; // Row ID for API operations
+  [key: string]: string | number | undefined;
 }
 
 export interface Variable {
+  id?: string;
   name: string;
   type: 'text' | 'number' | 'date';
   defaultValue?: string;
+  position?: number;
 }
 
 export interface Template {

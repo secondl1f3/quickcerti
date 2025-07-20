@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDesignStore } from '../store/designStore';
-import { useDataStore } from '../store/dataStore';
+import { useDatasetStore } from '../store/datasetStore';
 
 interface PreviewModalProps {
   onClose: () => void;
@@ -9,7 +9,7 @@ interface PreviewModalProps {
 
 export const PreviewModal: React.FC<PreviewModalProps> = ({ onClose }) => {
   const { elements } = useDesignStore();
-  const { data, variables } = useDataStore();
+  const { data, variables, currentDataset } = useDatasetStore();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const renderPreview = (dataRow: any) => {
@@ -23,9 +23,11 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ onClose }) => {
         } else {
           // Replace {{VARIABLE}} placeholders
           variables.forEach((variable) => {
-            const placeholder = `{{${variable.name}}}`;
-            if (text.includes(placeholder) && dataRow[variable.name] !== undefined && dataRow[variable.name] !== null) {
-              text = text.replace(new RegExp(placeholder, 'g'), dataRow[variable.name].toString());
+            if (variable && variable.name) {
+              const placeholder = `{{${variable.name}}}`;
+              if (text.includes(placeholder) && dataRow[variable.name] !== undefined && dataRow[variable.name] !== null) {
+                text = text.replace(new RegExp(placeholder, 'g'), dataRow[variable.name].toString());
+              }
             }
           });
         }
@@ -150,6 +152,30 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ onClose }) => {
     setCurrentIndex((prev) => (prev - 1 + data.length) % data.length);
   };
 
+  if (!currentDataset) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-5/6 flex flex-col">
+          <div className="flex items-center justify-between p-6 border-b">
+            <h2 className="text-2xl font-bold">Preview</h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-gray-500 mb-2">No dataset selected</p>
+              <p className="text-sm text-gray-400">Please select a dataset from the Data Manager to preview your certificates</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (data.length === 0) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -164,7 +190,10 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ onClose }) => {
             </button>
           </div>
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-gray-500">No data available for preview</p>
+            <div className="text-center">
+              <p className="text-gray-500 mb-2">No data available for preview</p>
+              <p className="text-sm text-gray-400">The selected dataset "{currentDataset?.name}" has no data rows</p>
+            </div>
           </div>
         </div>
       </div>
