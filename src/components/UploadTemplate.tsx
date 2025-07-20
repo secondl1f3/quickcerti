@@ -40,22 +40,6 @@ export const UploadTemplate: React.FC<UploadTemplateProps> = ({ onClose, onUploa
     }
   };
 
-  // Helper function to convert file to base64 data URL
-  const convertFileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          resolve(reader.result);
-        } else {
-          reject(new Error('Failed to convert file to base64'));
-        }
-      };
-      reader.onerror = () => reject(new Error('Error reading file'));
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleFileUpload = async (file: File) => {
     setUploadStatus('uploading');
     setErrorMessage('');
@@ -87,13 +71,11 @@ export const UploadTemplate: React.FC<UploadTemplateProps> = ({ onClose, onUploa
     }
 
     try {
-      // Convert file to base64 data URL
-      const base64DataUrl = await convertFileToBase64(file);
+      // Create object URL for preview
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
       
-      // Set preview using base64 data URL
-      setPreviewUrl(base64DataUrl);
-      
-      // Upload template using the service with base64 data
+      // Upload template using the service
       const template = await TemplateService.uploadTemplate(file, {
         name: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
         isPublic: false,
@@ -102,9 +84,11 @@ export const UploadTemplate: React.FC<UploadTemplateProps> = ({ onClose, onUploa
       setUploadStatus('success');
       
       setTimeout(() => {
-        // Use base64 data URL for better quality and immediate availability
-        onUploadSuccess(base64DataUrl);
+        // Use the final template URL from the service
+        onUploadSuccess(template.templateUrl || template.thumbnail);
         onClose();
+        // Clean up object URL
+        URL.revokeObjectURL(objectUrl);
       }, 1500);
     } catch (error) {
       console.error('Template upload failed:', error);
@@ -122,7 +106,7 @@ export const UploadTemplate: React.FC<UploadTemplateProps> = ({ onClose, onUploa
   };
 
   const getSupportedFormatsText = () => {
-    return 'JPG, PNG, WEBP, SVG';
+    return 'JPG, PNG, WEBP, SVG, PDF';
   };
 
   return (

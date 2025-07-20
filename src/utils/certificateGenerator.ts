@@ -120,14 +120,14 @@ export class CertificateGenerator {
 
     try {
       // Render elements to the canvas
-      this.renderElementsToCanvas(canvas, dataRow);
+      await this.renderElementsToCanvas(canvas, dataRow);
 
       // Convert to image with optimized settings for bulk generation
       const htmlCanvas = await html2canvas(canvas, {
         width: this.canvasWidth,
         height: this.canvasHeight,
-        scale: 1,
-        backgroundColor: '#ffffff',
+        scale: 3, // Increase scale for better quality
+        backgroundColor: null, // Use null for transparent background
         useCORS: true,
         allowTaint: true,
         logging: false, // Disable logging for better performance
@@ -159,9 +159,10 @@ export class CertificateGenerator {
     }
   }
 
-  private renderElementsToCanvas(canvas: HTMLDivElement, dataRow: DataRow): void {
+  private async renderElementsToCanvas(canvas: HTMLDivElement, dataRow: DataRow): Promise<void> {
     // Sort elements by z-index
     const sortedElements = [...this.elements].sort((a, b) => a.zIndex - b.zIndex);
+    const imagePromises: Promise<void>[] = [];
 
     sortedElements.forEach(element => {
       const elementDiv = document.createElement('div');
@@ -188,12 +189,15 @@ export class CertificateGenerator {
           this.renderLineElement(elementDiv, element);
           break;
         case 'image':
-          this.renderImageElement(elementDiv, element);
+          imagePromises.push(this.renderImageElement(elementDiv, element));
           break;
       }
 
       canvas.appendChild(elementDiv);
     });
+
+    // Wait for all images to load
+    await Promise.all(imagePromises);
   }
 
   private renderTextElement(div: HTMLDivElement, element: DesignElement, dataRow: DataRow): void {
@@ -258,14 +262,31 @@ export class CertificateGenerator {
     div.style.borderStyle = element.lineStyle?.style || 'solid';
   }
 
-  private renderImageElement(div: HTMLDivElement, element: DesignElement): void {
+  private async renderImageElement(div: HTMLDivElement, element: DesignElement): Promise<void> {
     if (element.imageUrl) {
-      const img = document.createElement('img');
-      img.src = element.imageUrl;
-      img.style.width = '100%';
-      img.style.height = '100%';
-      img.style.objectFit = 'cover';
-      div.appendChild(img);
+      return new Promise((resolve, reject) => {
+        const img = document.createElement('img');
+        img.crossOrigin = 'anonymous'; // Handle CORS for images from other domains
+        img.src = element.imageUrl;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+
+        img.onload = () => {
+          div.appendChild(img);
+          resolve();
+        };
+
+        img.onerror = (error) => {
+          console.error('Error loading image:', element.imageUrl, error);
+          // Optionally, append a placeholder or error message
+          const errorText = document.createElement('div');
+          errorText.textContent = 'Image not found';
+          errorText.style.color = 'red';
+          div.appendChild(errorText);
+          reject(new Error(`Failed to load image: ${element.imageUrl}`));
+        };
+      });
     }
   }
 
