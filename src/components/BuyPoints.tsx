@@ -26,7 +26,7 @@ export const BuyPoints: React.FC<BuyPointsProps> = ({ onClose }) => {
     { points: 1000, popular: false },
   ];
 
-  const totalPrice = calculateTotalPrice(pointAmount);
+  const totalPrice = calculateTotalPrice(pointAmount, 100);
 
   const validateInput = (value: number): boolean => {
     if (value < 1) {
@@ -126,7 +126,7 @@ export const BuyPoints: React.FC<BuyPointsProps> = ({ onClose }) => {
                       <p className="text-2xl font-bold text-gray-900">{pkg.points}</p>
                       <p className="text-xs text-gray-500">points</p>
                       <p className="text-sm font-semibold text-emerald-600 mt-2">
-                        {formatRupiah(calculateTotalPrice(pkg.points))}
+                        {formatRupiah(calculateTotalPrice(pkg.points, 100))}
                       </p>
                     </button>
                   ))}

@@ -290,26 +290,31 @@ function AppContent() {
             <UploadTemplate 
               onClose={() => setShowUploadTemplate(false)}
               onUploadSuccess={(imageUrl) => {
-                // Create a background image element from the uploaded image
-                const backgroundElement = {
-                  id: Date.now().toString(),
-                  type: 'image' as const,
-                  x: 0,
-                  y: 0,
-                  width: 800,
-                  height: 600,
-                  position: { x: 0, y: 0 },
-                  size: { width: 800, height: 600 },
-                  rotation: 0,
-                  opacity: 1,
-                  zIndex: 0,
-                  imageUrl: imageUrl,
-                  locked: true // Lock the background so it can't be accidentally moved
+                // Create a new image to get the actual dimensions
+                const img = new Image();
+                img.onload = () => {
+                  // Use the actual image dimensions
+                  const backgroundElement = {
+                    id: Date.now().toString(),
+                    type: 'image' as const,
+                    x: 0,
+                    y: 0,
+                    width: img.width,
+                    height: img.height,
+                    position: { x: 0, y: 0 },
+                    size: { width: img.width, height: img.height },
+                    rotation: 0,
+                    opacity: 1,
+                    zIndex: 0,
+                    imageUrl: imageUrl,
+                    locked: true // Lock the background so it can't be accidentally moved
+                  };
+                  
+                  setElements([backgroundElement]);
+                  setShowUploadTemplate(false);
+                  handleNavigateToView('editor');
                 };
-                
-                setElements([backgroundElement]);
-                setShowUploadTemplate(false);
-                handleNavigateToView('editor');
+                img.src = imageUrl;
               }}
             />
           )}
@@ -401,26 +406,31 @@ function AppContent() {
               <UploadTemplate 
                 onClose={() => setShowUploadTemplate(false)}
                 onUploadSuccess={(imageUrl) => {
-                  // Create a background image element from the uploaded image
-                  const backgroundElement = {
-                    id: Date.now().toString(),
-                    type: 'image' as const,
-                    x: 0,
-                    y: 0,
-                    width: 800,
-                    height: 600,
-                    position: { x: 0, y: 0 },
-                    size: { width: 800, height: 600 },
-                    rotation: 0,
-                    opacity: 1,
-                    zIndex: 0,
-                    imageUrl: imageUrl,
-                    locked: true
+                  // Create a new image to get the actual dimensions
+                  const img = new Image();
+                  img.onload = () => {
+                    // Use the actual image dimensions
+                    const backgroundElement = {
+                      id: Date.now().toString(),
+                      type: 'image' as const,
+                      x: 0,
+                      y: 0,
+                      width: img.width,
+                      height: img.height,
+                      position: { x: 0, y: 0 },
+                      size: { width: img.width, height: img.height },
+                      rotation: 0,
+                      opacity: 1,
+                      zIndex: 0,
+                      imageUrl: imageUrl,
+                      locked: true
+                    };
+                    
+                    setElements([backgroundElement]);
+                    setShowUploadTemplate(false);
+                    handleNavigateToView('editor');
                   };
-                  
-                  setElements([backgroundElement]);
-                  setShowUploadTemplate(false);
-                  handleNavigateToView('editor');
+                  img.src = imageUrl;
                 }}
               />
             )}

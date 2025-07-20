@@ -269,6 +269,8 @@ export class CertificateGenerator {
     }
   }
 
+
+
   private async generatePDFBlob(canvas: HTMLCanvasElement): Promise<Blob> {
     const pdf = new jsPDF({
       orientation: 'landscape',

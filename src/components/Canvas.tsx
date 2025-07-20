@@ -173,6 +173,20 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
 
   const { t } = useTranslation();
 
+  // Calculate canvas size based on background image or use default
+  const getCanvasSize = () => {
+    const backgroundElement = elements.find(el => el.zIndex === 0 && el.type === 'image');
+    if (backgroundElement) {
+      return {
+        width: backgroundElement.size.width,
+        height: backgroundElement.size.height
+      };
+    }
+    return { width: 800, height: 600 }; // Default size
+  };
+
+  const canvasSize = getCanvasSize();
+
   const getToolInstruction = () => {
     switch (activeTool) {
       case 'text':
@@ -238,8 +252,8 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
               : ''
           }`}
           style={{
-            width: 800 * zoom,
-            height: 600 * zoom,
+            width: canvasSize.width * zoom,
+            height: canvasSize.height * zoom,
             transform: `translate(${pan.x}px, ${pan.y}px)`,
             margin: '100px auto',
           }}

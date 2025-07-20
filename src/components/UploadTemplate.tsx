@@ -40,6 +40,22 @@ export const UploadTemplate: React.FC<UploadTemplateProps> = ({ onClose, onUploa
     }
   };
 
+  // Helper function to convert file to base64 data URL
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Failed to convert file to base64'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Error reading file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileUpload = async (file: File) => {
     setUploadStatus('uploading');
     setErrorMessage('');
@@ -51,16 +67,15 @@ export const UploadTemplate: React.FC<UploadTemplateProps> = ({ onClose, onUploa
       'image/jpg', 
       'image/png',
       'image/webp',
-      'image/svg+xml',
-      'application/pdf'
+      'image/svg+xml'
     ];
     
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.pdf'];
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.svg'];
     const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
     
     if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
       setUploadStatus('error');
-      setErrorMessage('Format file tidak didukung. Harap upload file JPG, PNG, WEBP, SVG, atau PDF.');
+      setErrorMessage('Format file tidak didukung. Harap upload file JPG, PNG, WEBP, atau SVG.');
       return;
     }
 
@@ -72,11 +87,13 @@ export const UploadTemplate: React.FC<UploadTemplateProps> = ({ onClose, onUploa
     }
 
     try {
-      // Create object URL for preview
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
+      // Convert file to base64 data URL
+      const base64DataUrl = await convertFileToBase64(file);
       
-      // Upload template using the service
+      // Set preview using base64 data URL
+      setPreviewUrl(base64DataUrl);
+      
+      // Upload template using the service with base64 data
       const template = await TemplateService.uploadTemplate(file, {
         name: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
         isPublic: false,
@@ -85,11 +102,9 @@ export const UploadTemplate: React.FC<UploadTemplateProps> = ({ onClose, onUploa
       setUploadStatus('success');
       
       setTimeout(() => {
-        // Use the final template URL from the service
-        onUploadSuccess(template.templateUrl || template.thumbnail);
+        // Use base64 data URL for better quality and immediate availability
+        onUploadSuccess(base64DataUrl);
         onClose();
-        // Clean up object URL
-        URL.revokeObjectURL(objectUrl);
       }, 1500);
     } catch (error) {
       console.error('Template upload failed:', error);
@@ -107,7 +122,7 @@ export const UploadTemplate: React.FC<UploadTemplateProps> = ({ onClose, onUploa
   };
 
   const getSupportedFormatsText = () => {
-    return 'JPG, PNG, WEBP, SVG, PDF';
+    return 'JPG, PNG, WEBP, SVG';
   };
 
   return (
@@ -235,7 +250,7 @@ export const UploadTemplate: React.FC<UploadTemplateProps> = ({ onClose, onUploa
         <input
           ref={fileInputRef}
           type="file"
-          accept=".jpg,.jpeg,.png,.webp,.svg,.pdf,image/*,application/pdf"
+          accept=".jpg,.jpeg,.png,.webp,.svg,image/*"
           onChange={handleFileSelect}
           className="hidden"
         />

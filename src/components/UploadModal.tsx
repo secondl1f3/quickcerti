@@ -26,7 +26,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({ onClose }) => {
 
   const validateFile = (file: File): string | null => {
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      return 'Please upload a valid image file (.jpg, .png, .webp, .svg)';
+      return 'Please upload a valid file (.jpg, .png, .webp, .svg)';
     }
     
     if (file.size > MAX_FILE_SIZE) {

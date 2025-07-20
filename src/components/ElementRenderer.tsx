@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { DesignElement } from '../types';
+import { useDesignStore } from '../store/designStore';
 
 interface ElementRendererProps {
   element: DesignElement;
@@ -169,8 +170,10 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({
   const handleImageError = () => {
     setImageLoaded(false);
     setImageError(true);
-    console.error('Failed to load image:', element.imageUrl);
+    console.error('Failed to load file:', element.imageUrl);
   };
+
+
 
   useEffect(() => {
     if (isDragging || isResizing) {
@@ -312,8 +315,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({
           return (
             <div className="w-full h-full bg-red-100 border-2 border-red-300 border-dashed flex items-center justify-center text-red-600 text-sm">
               <div className="text-center">
-                <div>Image Load Error</div>
-                <div className="text-xs mt-1">Check image URL</div>
+                <div>File Load Error</div>
+                <div className="text-xs mt-1">Check file URL</div>
               </div>
             </div>
           );
