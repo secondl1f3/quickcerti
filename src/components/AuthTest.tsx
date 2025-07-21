@@ -67,16 +67,6 @@ export const AuthTest: React.FC<AuthTestProps> = ({ onClose }) => {
           </button>
         </div>
         
-        <div className="mb-4">
-          <button
-            onClick={testAuthentication}
-            disabled={isLoading}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
-          >
-            {isLoading ? 'Testing...' : 'Test API Authentication'}
-          </button>
-        </div>
-        
         <div className="bg-gray-100 p-4 rounded max-h-96 overflow-y-auto">
           <h3 className="font-semibold mb-2">Test Results:</h3>
           {testResults.length === 0 ? (

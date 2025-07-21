@@ -86,16 +86,6 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               </button>
             )}
 
-            {isDevelopment && (
-              <button
-                onClick={() => setShowAuthTest(true)}
-                className="p-2 text-orange-600 hover:text-orange-900 hover:bg-orange-100 rounded-full transition-colors"
-                title="Test API Authentication"
-              >
-                <Bug className="w-6 h-6" />
-              </button>
-            )}
-
             {/* Profile Dropdown */}
             <div className="relative">
               <button

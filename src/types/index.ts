@@ -56,6 +56,8 @@ export interface DesignElement {
     width: number;
     style: 'solid' | 'dashed' | 'dotted';
   };
+  canvasWidth?:  number;
+  canvasHeight?: number;
 }
 
 export interface DataRow {

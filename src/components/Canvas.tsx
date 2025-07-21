@@ -23,7 +23,7 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
   onElementUpdate,
   onElementAdd,
 }, ref) => {
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.5);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
@@ -140,11 +140,11 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (isPanning && activeTool === 'pan') {
       const deltaX = e.clientX - lastPanPoint.x;
-      const deltaY = e.clientY - lastPanPoint.y;
+      // Only allow horizontal panning
       
       setPan(prev => ({
         x: prev.x + deltaX,
-        y: prev.y + deltaY,
+        y: prev.y, // Keep Y position fixed
       }));
       
       setLastPanPoint({ x: e.clientX, y: e.clientY });
@@ -155,10 +155,23 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
     setIsPanning(false);
   }, []);
 
+  const handleZoomIn = useCallback(() => {
+    setZoom(prev => Math.min(prev * 1.2, 5));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoom(prev => Math.max(prev * 0.8, 0.1));
+  }, []);
+
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setZoom(prev => Math.min(Math.max(prev * delta, 0.1), 5));
+    // Only allow horizontal panning, disable zoom
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      setPan(prev => ({
+        x: prev.x - e.deltaX,
+        y: prev.y
+      }));
+    }
   }, []);
 
   useEffect(() => {
@@ -170,6 +183,30 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
       };
     }
   }, [handleWheel]);
+
+  // Disable browser swipe navigation
+  useEffect(() => {
+    const preventSwipeNavigation = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        e.preventDefault();
+      }
+    };
+
+    const preventMouseNavigation = (e: MouseEvent) => {
+      // Prevent mouse back/forward navigation
+      if (e.buttons === 8 || e.buttons === 16) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('touchstart', preventSwipeNavigation, { passive: false });
+    document.addEventListener('mousedown', preventMouseNavigation);
+    
+    return () => {
+      document.removeEventListener('touchstart', preventSwipeNavigation);
+      document.removeEventListener('mousedown', preventMouseNavigation);
+    };
+  }, []);
 
   const { t } = useTranslation();
 
@@ -215,8 +252,23 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
           <span className="text-sm font-medium">Zoom:</span>
           <span className="text-sm">{Math.round(zoom * 100)}%</span>
           <button
-            onClick={() => setZoom(1)}
+            onClick={handleZoomOut}
+            className="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 font-bold"
+            title="Zoom Out"
+          >
+            -
+          </button>
+          <button
+            onClick={handleZoomIn}
+            className="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 font-bold"
+            title="Zoom In"
+          >
+            +
+          </button>
+          <button
+            onClick={() => setZoom(0.5)}
             className="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200"
+            title="Reset to 50%"
           >
             Reset
           </button>
@@ -235,7 +287,7 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
 
       <div
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair"
+        className="w-full h-full cursor-crosshair overflow-auto"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -256,6 +308,8 @@ export const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
             height: canvasSize.height * zoom,
             transform: `translate(${pan.x}px, ${pan.y}px)`,
             margin: '100px auto',
+            minWidth: canvasSize.width * zoom,
+            minHeight: canvasSize.height * zoom,
           }}
         >
           <Grid zoom={zoom} />

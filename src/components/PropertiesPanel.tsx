@@ -18,7 +18,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   
   if (!selectedElement) {
     return (
-      <div className="w-80 bg-white border-l border-gray-200 flex flex-col h-full">
+      <div className="w-80 bg-white border-l border-gray-200 flex flex-col h-full" style={{ minWidth: '320px', maxWidth: '320px', width: '320px !important' }}>
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="text-center text-gray-500 h-full">
             <p>{t('selectElementToEdit')}</p>
@@ -33,7 +33,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   };
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 flex flex-col h-full">
+    <div className="w-80 bg-white border-l border-gray-200 flex flex-col h-full" style={{ minWidth: '320px', maxWidth: '320px', width: '320px !important' }}>
       {/* --- Static Header --- */}
       <div className="p-6 border-b border-gray-200">
         <h3 className="text-lg font-semibold capitalize">

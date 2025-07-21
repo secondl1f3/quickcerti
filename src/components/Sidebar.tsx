@@ -150,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Spacer */}
-        <div className="flex-1"></div>
+        {/* <div className="flex-1"></div> */}
 
         {/* Actions */}
         {/* <div className="p-2 space-y-1">

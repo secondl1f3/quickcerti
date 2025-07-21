@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDesignStore } from '../store/designStore';
 import { useDatasetStore } from '../store/datasetStore';
@@ -11,7 +11,36 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ onClose }) => {
   const { elements } = useDesignStore();
   const { data, variables, currentDataset } = useDatasetStore();
   const [currentIndex, setCurrentIndex] = useState(0);
+  
+  // Calculate canvas size based on background image or use default
+  const getCanvasSize = () => {
+    const backgroundElement = elements.find(el => el.zIndex === 0 && el.type === 'image');
+    if (backgroundElement) {
+      return {
+        width: backgroundElement.size.width,
+        height: backgroundElement.size.height
+      };
+    }
+    return { width: 800, height: 600 }; // Default size
+  };
 
+  const canvasSize = getCanvasSize();
+  const width = canvasSize.width;
+  const height = canvasSize.height;
+
+  // --- state -----------------------------------------------------
+  const [scale, setScale] = useState(1);
+
+  // --- compute scale each render -------------------------------
+  useEffect(() => {
+    const container = document.getElementById('preview-container');
+    if (!container) return;
+
+    const scaleX = container.clientWidth  / width;
+    const scaleY = container.clientHeight / height;
+    const newScale = Math.min(scaleX, scaleY, 1);   // never bigger than 100 %
+    setScale(newScale);
+  }, [width, height]);
   const renderPreview = (dataRow: any) => {
     return elements.map((element) => {
       if (element.type === 'text') {
@@ -236,19 +265,29 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ onClose }) => {
         </div>
 
         {/* Preview */}
-        <div className="flex-1 overflow-auto p-6 bg-gray-100">
-          <div className="flex justify-center">
+        <div id="preview-container" className="flex-1 flex items-center justify-center p-6 bg-gray-100 overflow-hidden">
+          <div
+            className="relative bg-white shadow-lg"
+            style={{
+              width: width * scale,
+              height: height * scale,
+              maxWidth: '100%',
+              maxHeight: '100%',
+            }}
+          >
             <div
-              className="relative bg-white shadow-lg"
               style={{
-                width: 800,
-                height: 600,
+                width,
+                height,
+                transform: `scale(${scale})`,
+                transformOrigin: 'top left',
               }}
             >
               {renderPreview(data[currentIndex])}
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

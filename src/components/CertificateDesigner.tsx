@@ -15,7 +15,6 @@ import { useDatasetStore } from '../store/datasetStore';
 import { usePointStore } from '../store/pointStore';
 
 import { getUserProfile } from '../services/userService';
-import { CertificateGenerator } from '../utils/certificateGenerator';
 
 interface CertificateDesignerProps {
   elements: DesignElement[];
@@ -211,7 +210,7 @@ export const CertificateDesigner: React.FC<CertificateDesignerProps> = ({
               ← Kembali
             </button>
             <h1 className="text-xl font-semibold text-gray-900">
-              Certificate Designer
+              Desainer
             </h1>
           </div>
           
@@ -348,7 +347,7 @@ export const CertificateDesigner: React.FC<CertificateDesignerProps> = ({
           onRedo={onRedo}
         />
         
-        <div className="flex-1 relative">
+        <div className="flex-1 relative overflow-hidden">
           <Canvas
             ref={canvasRef}
             activeTool={activeTool}
