@@ -376,25 +376,33 @@ function AppContent() {
                     setShowUploadTemplate(true);
                   }}
                   onSelectTemplate={(template) => {
-                    // Create a background image element from the selected template
-                    const backgroundElement = {
-                      id: Date.now().toString(),
-                      type: 'image' as const,
-                      x: 0,
-                      y: 0,
-                      width: 800,
-                      height: 600,
-                      position: { x: 0, y: 0 },
-                      size: { width: 800, height: 600 },
-                      rotation: 0,
-                      opacity: 1,
-                      zIndex: 0,
-                      imageUrl: template.templateUrl,
-                      locked: true
-                    };
-                    
-                    setElements([backgroundElement]);
-                    handleNavigateToView('editor');
+                    if (template.templateUrl) {
+                      const img = new Image();
+                      img.onload = () => {
+                        const backgroundElement = {
+                          id: Date.now().toString(),
+                          type: 'image' as const,
+                          x: 0,
+                          y: 0,
+                          width: img.width,
+                          height: img.height,
+                          position: { x: 0, y: 0 },
+                          size: { width: img.width, height: img.height },
+                          rotation: 0,
+                          opacity: 1,
+                          zIndex: 0,
+                          imageUrl: template.templateUrl,
+                          locked: true
+                        };
+                        
+                        setElements([backgroundElement, ...(Array.isArray(template.elements) ? template.elements : [])]);
+                        handleNavigateToView('editor');
+                      };
+                      img.src = template.templateUrl;
+                    } else {
+                      setElements(template.elements);
+                      handleNavigateToView('editor');
+                    }
                   }}
                 />
               </div>

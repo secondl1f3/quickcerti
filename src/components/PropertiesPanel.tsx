@@ -20,7 +20,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
     return (
       <div className="w-80 bg-white border-l border-gray-200 flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center p-6">
-          <div className="text-center text-gray-500">
+          <div className="text-center text-gray-500 h-full">
             <p>{t('selectElementToEdit')}</p>
           </div>
         </div>
@@ -43,7 +43,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
 
       {/* --- Independently Scrollable Body --- */}
       <div className="flex-1 overflow-y-auto p-6 min-h-0">
-        <div className="space-y-6">
+        <div className="space-y-6 flex flex-col h-full">
 
           {/* Position & Size */}
           <div className="space-y-3">
@@ -127,7 +127,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           {/* Text Properties */}
           {selectedElement.type === 'text' && (
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-700">{t('textProperties')}</h4>
+              <h4 className="font-medium text-gray-700">Text</h4>
               
               <div>
                 <label className="block text-sm text-gray-600 mb-1">{t('text')}</label>
@@ -139,178 +139,106 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                 />
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">{t('fontFamily')}</label>
-                <select
-                  value={selectedElement.textStyle?.fontFamily || 'Arial'}
-                  onChange={(e) => handleUpdate({
-                    textStyle: { 
-                      ...selectedElement.textStyle,
-                      fontFamily: 'Arial',
-                      fontSize: 16,
-                      fontWeight: 'normal',
-                      color: '#000000',
-                      textAlign: 'left' as const,
-                      ...selectedElement.textStyle,
-                      fontFamily: e.target.value 
-                    }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                >
-                  <option value="Arial">Arial</option>
-                  <option value="Times New Roman">Times New Roman</option>
-                  <option value="Helvetica">Helvetica</option>
-                  <option value="Georgia">Georgia</option>
-                  <option value="Verdana">Verdana</option>
-                </select>
+              {/* Font and Regular in one row */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Font</label>
+                  <select
+                    value={selectedElement.textStyle?.fontFamily || 'Arial'}
+                    onChange={(e) => handleUpdate({
+                      textStyle: {
+                        ...(selectedElement.textStyle || {}),
+                        fontFamily: e.target.value
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="Arial">Arial</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Helvetica">Helvetica</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Roboto">Roboto</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Regular</label>
+                  <select
+                    value={selectedElement.textStyle?.fontWeight || 'normal'}
+                    onChange={(e) => handleUpdate({
+                      textStyle: {
+                        ...(selectedElement.textStyle || {}),
+                        fontWeight: e.target.value
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="normal">Regular</option>
+                    <option value="bold">Bold</option>
+                    <option value="lighter">Light</option>
+                  </select>
+                </div>
               </div>
 
+              {/* Fill - square color picker */}
               <div>
-                <label className="block text-sm text-gray-600 mb-1">{t('fontSize')}</label>
-                <input
-                  type="number"
-                  value={selectedElement.textStyle?.fontSize || 16}
-                  onChange={(e) => handleUpdate({
-                    textStyle: { 
-                      fontFamily: 'Arial',
-                      fontSize: 16,
-                      fontWeight: 'normal',
-                      color: '#000000',
-                      textAlign: 'left' as const,
-                      ...selectedElement.textStyle,
-                      fontSize: parseInt(e.target.value) || 16 
-                    }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">{t('color')}</label>
+                <label className="block text-sm text-gray-600 mb-1">Fill</label>
                 <input
                   type="color"
                   value={selectedElement.textStyle?.color || '#000000'}
                   onChange={(e) => handleUpdate({
-                    textStyle: { 
-                      fontFamily: 'Arial',
-                      fontSize: 16,
-                      fontWeight: 'normal',
-                      textAlign: 'left' as const,
-                      ...selectedElement.textStyle,
-                      color: e.target.value 
+                    textStyle: {
+                      ...(selectedElement.textStyle || {}),
+                      color: e.target.value
                     }
                   })}
-                  className="w-full h-10 border border-gray-300 rounded-md"
+                  className="w-10 h-10 border border-gray-300 rounded-md"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">{t('textAlign')}</label>
-                <div className="flex space-x-1">
-                  {['left', 'center', 'right'].map((align) => (
-                    <button
-                      key={align}
-                      onClick={() => handleUpdate({
-                        textStyle: { 
-                          fontFamily: 'Arial',
-                          fontSize: 16,
-                          fontWeight: 'normal',
-                          color: '#000000',
-                          ...selectedElement.textStyle,
-                          textAlign: align as 'left' | 'center' | 'right'
-                        }
-                      })}
-                      className={`px-3 py-2 rounded-md text-sm border ${
-                        selectedElement.textStyle?.textAlign === align
-                          ? 'bg-blue-500 text-white border-blue-500'
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {align === 'left' && <AlignLeft size={16} />}
-                      {align === 'center' && <AlignCenter size={16} />}
-                      {align === 'right' && <AlignRight size={16} />}
-                    </button>
-                  ))}
+              {/* Align and Size in one row */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-sm text-gray-600 mb-2">Align</label>
+                  <div className="flex space-x-1">
+                    {['left', 'center', 'right'].map((align) => (
+                      <button
+                        key={align}
+                        onClick={() => handleUpdate({
+                          textStyle: {
+                            ...(selectedElement.textStyle || {}),
+                            textAlign: align as 'left' | 'center' | 'right'
+                          }
+                        })}
+                        className={`px-2 py-1 rounded-md text-sm border ${
+                          selectedElement.textStyle?.textAlign === align
+                            ? 'bg-blue-500 text-white border-blue-500'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {align === 'left' && <AlignLeft size={14} />}
+                        {align === 'center' && <AlignCenter size={14} />}
+                        {align === 'right' && <AlignRight size={14} />}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">Vertical Align</label>
-                <div className="flex space-x-1">
-                  {['top', 'center', 'bottom'].map((align) => (
-                    <button
-                      key={align}
-                      onClick={() => handleUpdate({
-                        textStyle: { 
-                          fontFamily: 'Arial',
-                          fontSize: 16,
-                          fontWeight: 'normal',
-                          color: '#000000',
-                          textAlign: 'left' as const,
-                          ...selectedElement.textStyle,
-                          verticalAlign: align as 'top' | 'center' | 'bottom'
-                        }
-                      })}
-                      className={`px-3 py-2 rounded-md text-sm border ${
-                        selectedElement.textStyle?.verticalAlign === align
-                          ? 'bg-blue-500 text-white border-blue-500'
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {align === 'top' && <AlignVerticalJustifyStart size={16} />}
-                      {align === 'center' && <AlignVerticalJustifyCenter size={16} />}
-                      {align === 'bottom' && <AlignVerticalJustifyEnd size={16} />}
-                    </button>
-                  ))}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Size</label>
+                  <input
+                    type="number"
+                    value={selectedElement.textStyle?.fontSize || 16}
+                    onChange={(e) => handleUpdate({
+                      textStyle: {
+                        ...(selectedElement.textStyle || {}),
+                        fontSize: parseInt(e.target.value) || 16
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">Font Weight</label>
-                <select
-                  value={selectedElement.textStyle?.fontWeight || 'normal'}
-                  onChange={(e) => handleUpdate({
-                    textStyle: { 
-                      fontFamily: 'Arial',
-                      fontSize: 16,
-                      color: '#000000',
-                      textAlign: 'left' as const,
-                      ...selectedElement.textStyle,
-                      fontWeight: e.target.value 
-                    }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                >
-                  <option value="normal">Normal</option>
-                  <option value="bold">Bold</option>
-                  <option value="lighter">Light</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Variable</label>
-                <select
-                  value={selectedElement.variableName || ''}
-                  onChange={(e) => handleUpdate({
-                    isVariable: !!e.target.value,
-                    variableName: e.target.value || undefined
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                >
-                  <option value="">No variable</option>
-                  {variables?.map((variable) => (
-                    variable && variable.name ? (
-                      <option key={variable.name} value={variable.name}>
-                        {variable.name}
-                      </option>
-                    ) : null
-                  ))}
-                </select>
-                {selectedElement.isVariable && (
-                  <p className="text-xs text-blue-600 mt-1">
-                    This text will be replaced with variable data
-                  </p>
-                )}
               </div>
             </div>
           )}

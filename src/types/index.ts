@@ -12,7 +12,7 @@ export interface Size {
 
 export interface TextStyle {
   fontFamily: string;
-  fontSize: number;
+  fontSize?: number;
   fontWeight: string;
   color: string;
   textAlign: 'left' | 'center' | 'right';
@@ -35,6 +35,7 @@ export interface DesignElement {
   rotation: number;
   opacity: number;
   zIndex: number;
+  locked?: boolean;
   
   // Text specific
   text?: string;

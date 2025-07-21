@@ -31,6 +31,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({
   const variableRef = useRef<HTMLInputElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (element.locked) return;
     e.stopPropagation();
     
     // Handle double-click for text editing BEFORE calling onClick
@@ -115,6 +116,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({
   };
 
   const handleResizeMouseDown = (e: React.MouseEvent, handle: string) => {
+    if (element.locked) return;
     e.stopPropagation();
     setIsResizing(true);
     setResizeHandle(handle);
