@@ -135,11 +135,19 @@ export class CertificateGenerator {
       certificateDiv.style.width = `${this.canvasWidth}px`;
       certificateDiv.style.height = `${this.canvasHeight}px`;
       certificateDiv.style.position = 'relative';
-      certificateDiv.style.backgroundColor = 'white';
+      
+      // Only set white background if there's no background image
+      const hasBackgroundImage = this.elements.some(el => el.zIndex === 0 && el.type === 'image');
+      if (!hasBackgroundImage) {
+        certificateDiv.style.backgroundColor = 'white';
+      }
       
       // Sort elements by zIndex and render them
       const sortedElements = this.elements.sort((a, b) => a.zIndex - b.zIndex);
       const imagePromises: Promise<void>[] = [];
+      
+      console.log('Rendering elements:', sortedElements.length);
+      console.log('Background element:', sortedElements.find(el => el.zIndex === 0 && el.type === 'image'));
       
       sortedElements.forEach((element) => {
         const elementDiv = document.createElement('div');
@@ -190,23 +198,65 @@ export class CertificateGenerator {
           
           elementDiv.appendChild(textSpan);
         } else if (element.type === 'image' && element.imageUrl) {
+          console.log(`Processing image element: zIndex=${element.zIndex}, url=${element.imageUrl}`);
           const imagePromise = new Promise<void>((resolveImage) => {
-            const img = document.createElement('img');
-            img.src = element.imageUrl!;
-            img.alt = 'Template element';
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.objectFit = 'cover';
+            // Convert external image to data URL to avoid CORS taint
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const tempImg = new Image();
+            tempImg.crossOrigin = 'anonymous';
             
-            img.onload = () => {
-              elementDiv.appendChild(img);
-              resolveImage();
+            tempImg.onload = () => {
+              canvas.width = tempImg.width;
+              canvas.height = tempImg.height;
+              ctx?.drawImage(tempImg, 0, 0);
+              
+              const img = document.createElement('img');
+              try {
+                img.src = canvas.toDataURL('image/png');
+              } catch (e) {
+                // Fallback to original URL if conversion fails
+                img.src = element.imageUrl!;
+              }
+              img.alt = 'Template element';
+              img.style.width = '100%';
+              img.style.height = '100%';
+              img.style.objectFit = 'cover';
+              
+              img.onload = () => {
+                 console.log('Image loaded successfully');
+                 resolveImage();
+               };
+               img.onerror = () => {
+                 console.error('Failed to load image:', element.imageUrl);
+                 resolveImage();
+               };
+               
+               elementDiv.appendChild(img);
             };
             
-            img.onerror = () => {
-              console.warn(`Failed to load image: ${element.imageUrl}`);
-              resolveImage();
+            tempImg.onerror = () => {
+              // Fallback: use original image without conversion
+              const img = document.createElement('img');
+              img.src = element.imageUrl!;
+              img.alt = 'Template element';
+              img.style.width = '100%';
+              img.style.height = '100%';
+              img.style.objectFit = 'cover';
+              
+              img.onload = () => {
+                 console.log('Fallback image loaded');
+                 resolveImage();
+               };
+               img.onerror = () => {
+                 console.error('Failed to load fallback image:', element.imageUrl);
+                 resolveImage();
+               };
+               
+               elementDiv.appendChild(img);
             };
+            
+            tempImg.src = element.imageUrl!;
           });
           imagePromises.push(imagePromise);
         } else if (element.type === 'line') {
@@ -247,7 +297,7 @@ export class CertificateGenerator {
     container.style.height = `${this.canvasHeight}px`;
     container.style.zIndex = '-1000';
     container.style.visibility = 'hidden';
-    container.style.backgroundColor = 'white';
+    // Don't set background color - let background image show through
     
     // Add CSS styles for absolute positioning
     const style = document.createElement('style');
@@ -275,7 +325,7 @@ export class CertificateGenerator {
         height: this.canvasHeight,
         scale: 2,
         backgroundColor: 'white',
-        useCORS: true,
+        useCORS: false, // Disable CORS to allow tainted canvas
         allowTaint: true,
         logging: true,
         imageTimeout: 15000,
